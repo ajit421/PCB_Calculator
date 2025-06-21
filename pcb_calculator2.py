@@ -1,6 +1,5 @@
 import math
 
-from matplotlib.pylab import angle 
 
 # ------------------------- Constants and Configuration Data -------------------------
 
@@ -13,6 +12,7 @@ DEFAULT_ONE_PCB_OZ_FT2 = 40 # Copper weight per layer
 DEFAULT_MAGNET_STRENGTH_T = 0.5 # Magnet Strength
 DEFAULT_CELL_UNIT_CHARGE_V = 4.2 # Cell unit charge
 DEFAULT_TRACE_GAP_MM = 0.225 # Trace gap (Constant across all ODs)
+DEFAULT_TRACE_WIDTH_CURVED_LINE = 0.225 # Trace width for curved lines
 
 # Predefined values based on PCB Stator Outer Diameter (OD)
 PCB_OD_PARAMETERS = {
@@ -24,6 +24,7 @@ PCB_OD_PARAMETERS = {
         "cost_factor_pcb": 80,
         "cost_factor_magnets": 80,
         "miscellaneous_cost": 500,
+        "pcb_stator_od_mm": 50,
         "weight_factor": (5 + 7) # weight calculation
     },
     100: {
@@ -34,6 +35,7 @@ PCB_OD_PARAMETERS = {
         "cost_factor_pcb": 130,
         "cost_factor_magnets": 130,
         "miscellaneous_cost": 1000,
+        "pcb_stator_od_mm": 100,
         "weight_factor": (8 + 10) # weight calculation
     },
     150: {
@@ -44,6 +46,7 @@ PCB_OD_PARAMETERS = {
         "cost_factor_pcb": 200,
         "cost_factor_magnets": 200,
         "miscellaneous_cost": 1500,
+        "pcb_stator_od_mm": 150,
         "weight_factor": (11 + 12) # weight calculation
     }
 }
@@ -151,8 +154,8 @@ def calculate_winding_resistance(results):
         total_resistance = (resistivity * results["conductor_length_2phase_m"]) / cross_section
         
         # Account for parallel layers
-        parallel_resistance = total_resistance / results["layer_parallel"] * results.get("num_pcb_in_series", 1)  # num_pcb_in_series is used to scale resistance
-        
+        parallel_resistance = total_resistance / results["layer_parallel"]  # num_pcb_in_series is used to scale resistance
+
         return max(parallel_resistance, 0.001)  # Ensure non-zero value
     except Exception as e:
         results.setdefault("status_messages", []).append(f"Error in winding resistance calculation: {e}")
@@ -275,7 +278,7 @@ def calculate_results(inputs):
         "rpm": inputs.get("rpm"),
         "current_a": inputs.get("current_a"),
         "voltage_v": inputs.get("voltage_v"),
-        "power_in_kw": None, # will be calculated later
+        "power_in_kw": inputs.get("power_in_kw"),
         "efficiency_percent": inputs.get("efficiency_percent"),
         "pcb_stator_od_mm": inputs.get("pcb_stator_od_mm"),
         "num_cell_series" : inputs.get("num_cell_series"),
@@ -286,6 +289,35 @@ def calculate_results(inputs):
         "power_density_kw_kg": None,
         "kv_rating": None,
         "cost_inr": None,
+        "conductor_length_2phase_m": None,
+        "total_pcb": None,  # Total PCB length in meters
+        "num_coils_per_phase": None,  
+        "pcb_stator_id_mm": None,  
+        "trace_width_id_mm": None, 
+        "number_of_lines": None,
+        "num_lines_per_phase": None, 
+        "num_lines_180": None,
+        "coil_per_phase_180": None,
+        "trace_length_radial_mm": None,
+        "trace_radius_id_mm": None, 
+        "trace_radius_od_mm": None, 
+        "trace_od_circumference_mm": None,  
+        "current_conducting_radial_mm": None,
+        "trace_id_circumference_mm": None,  
+        "trace_width_od_mm": None,
+        "trace_thickness_id_mm": None,
+        "id_circumference_mm": None,
+        "non_magnet_area_mm": None,
+        "trace_thickness_od_mm": None,
+        "num_stator_coils": None,
+        "magnet_poles": None,
+        "average_trace_width_mm": None,
+        "total_conductor_length_m": None,
+        "on_conductor_length_m": None,
+        "required_copper_thickness_mm": None,
+        "radius_od_mm": None,
+        "stack_up_height_mm": None,
+
         "status_messages": [] # store messages success or failure
     }
 
@@ -336,224 +368,129 @@ def calculate_results(inputs):
         # id_circumference_mm = pcb_stator_id_mm *pi
         results["id_circumference_mm"] = results["pcb_stator_id_mm"] * math.pi
 
-        # Trace radius ID is Pcb stator ID / 2
-        results["trace_radius_id_mm"] = results["pcb_stator_id_mm"] / 2
+        # number of lines = 
 
-        # non magnet area is trace radius ID
+        if results["id_circumference_mm"] is not None and results["trace_width_id_mm"] is not None:
+
+            # Step 1: Calculate division
+            temp = results["id_circumference_mm"] / (results["trace_width_id_mm"] + DEFAULT_AIR_GAP_MM)
+
+            # Step 2: CEILING to nearest multiple of 6
+            significance = 6
+            ceiling_result = significance * math.ceil(temp / significance)
+
+            # Step 3: CLEAN - removes non-printable chars (mostly not needed for numbers in Python)
+            results["number_of_lines"] = int(ceiling_result) # Mimics CLEAN behavior on strings
+
+
+        # Trace ID circumference = number of lines * ( DEFAULT_TRACE_GAP_MM + trace_width_id_mm )
+        if results["trace_width_id_mm"] is not None and results["pcb_stator_id_mm"] is not None:
+            results["trace_id_circumference_mm"] = ((results["number_of_lines"]) * (DEFAULT_TRACE_GAP_MM + results["trace_width_id_mm"]))
+
+        # Trace radius ID = ( Trace ID circumference / 2*pi )
+        results["trace_radius_id_mm"] = results["trace_id_circumference_mm"] / (2 * math.pi)
+
+        # radial gap id = ( trace radius ID - ( pcb stator id / 2 ) )
+        results["radial_gap_id_mm"] = results["trace_radius_id_mm"] - ( results["pcb_stator_id_mm"] / 2)
+
+        # radial gap OD = DEFAULT_TRACE_GAP_MM
+        results["radial_gap_od_mm"] = DEFAULT_TRACE_GAP_MM
+
+        # non magnet area = trace radius ID
         results["non_magnet_area_mm"] = results["trace_radius_id_mm"]
 
+        
+        # Trace radius OD = (pcb_stator_od_mm / 2 ) - DEFAULT_TRACE_GAP_MM
+        results["trace_radius_od_mm"] = (results["pcb_stator_od_mm"] / 2 ) - DEFAULT_TRACE_GAP_MM
 
-        # Trace radius OD = (Trace OD/2) - DEFAULT_TRACE_GAP_MM
-        results["trace_radius_od_mm"] = (pcb_od_mm / 2) - DEFAULT_TRACE_GAP_MM
-        results["trace_od_circumference_mm"] = 2 * math.pi * results["trace_radius_od_mm"]
+        # Trace OD circumference = trace radius OD * 2 * pi
+        results["trace_od_circumference_mm"] = results["trace_radius_od_mm"] * 2 * math.pi
+        
+        # trace thickness OD = (trace OD circumference / number of lines ) - DEFAULT_TRACE_GAP_MM
+        results["trace_thickness_od_mm"] = (results["trace_od_circumference_mm"] / results["number_of_lines"]) - DEFAULT_TRACE_GAP_MM
 
         # Trace length radial = (Trace radius OD - Trace radius ID)
         results["trace_length_radial_mm"] = results["trace_radius_od_mm"] - results["trace_radius_id_mm"]
 
-        # Calculate `total pcb`= num_pcb_in_series * layer_parallel
-        results["total_pcb"] = results["num_pcb_in_series"] * results["layer_parallel"]
+        # number of line per phase = number_of_lines / DEFAULT_NUM_PHASE
+        if results["number_of_lines"] is not None:
+            results["num_lines_per_phase"] = results["number_of_lines"] / DEFAULT_NUM_PHASE
 
+        # number of lines 180 = number of lines per phase / 2
+        if results["num_lines_per_phase"] is not None:
+            results["num_lines_180"] = results["num_lines_per_phase"] / 2        
 
-        # currentConductingRadial = trace Length radial - (traceWidth / 2)
-        # Assuming traceWidth refers to trace_width_id_mm for this calculation
+        # coil per phase 180 = number of line per phase 180 - 1
+        results["coil_per_phase_180"] = (results["num_lines_180"] - 1)
 
-        # results["current_conducting_radial_mm"] = results["trace_length_radial_mm"] - (results["trace_width_id_mm"] / 2)
-        # if results["current_conducting_radial_mm"] < 0: # positive
-        #     results["current_conducting_radial_mm"] = 0
-        #     results["status_messages"].append("Calculated current conducting radial length is negative")
+        # Coil per phase = Coil per phase 180 * 2
+        results["num_coils_per_phase"] = results["coil_per_phase_180"] * 2
 
-        # Calculate `number of Lines`
-        # Approximating spreadsheet functions CLEAN(CEILING(X), 6) as ceil then round to nearest multiple of 6
+        # Number of stator coils = number of phases * per phase coils
+        results["num_stator_coils"] = DEFAULT_NUM_PHASE * results["num_coils_per_phase"]
 
-        # if (results["trace_width_id_mm"] + DEFAULT_TRACE_GAP_MM) > 0:
-        #     temp_num_lines = results["id_circumference_mm"] / (results["trace_width_id_mm"] + DEFAULT_TRACE_GAP_MM)
-        #     results["number_of_lines"] = math.ceil(temp_num_lines)
-        #     results["number_of_lines"] = round(results["number_of_lines"] / 6) * 6 # nearest multiple of 6
-        #     if results["number_of_lines"] == 0:
-        #         results["number_of_lines"] = 6 # minimum value
+        # magnet poles = stator coils + 2
+        results["magnet_poles"] = results["num_stator_coils"] + 2
 
-        # if results["trace_width_id_mm"] > 0:
-        #     results["current_conducting_radial_mm"] = ( results["trace_length_radial_mm"] - (results["trace_width_id_mm"] / 2) ) # currentConductingRadial = trace Length radial - (traceWidth / 2)
-        #     if results["current_conducting_radial_mm"] < 0: # positive
-        #         results["current_conducting_radial_mm"] = 0
-        #         results["status_messages"].append("Calculated current conducting radial length is negative")
-        # else:
-        #     results["current_conducting_radial_mm"] = 0
-
-       # Calculate `number of Lines`
-        if results["trace_width_id_mm"] > 0:
-            temp_num_lines = results["id_circumference_mm"] / (results["trace_width_id_mm"] + DEFAULT_TRACE_GAP_MM)
-            temp_num_lines = math.ceil(temp_num_lines) # clean(CEILING(X), 6) equivalent
-            results["number_of_lines"] = round(temp_num_lines / 6) * 6 # round to nearest multiple of 6
-            if results["number_of_lines"] == 0: # minimum value
-                results["number_of_lines"] = 6
-        else:
-            results["number_of_lines"] = 6 # default value if trace width is zero
-            results["status_messages"].append("cannot determine number of lines due to zero trace width or gap. this affects several downstream calculations")
-
-        # calculate trace width at OD
-        if results["number_of_lines"] is not None and results["trace_od_circumference_mm"] is not None:
-            results["trace_width_od_mm"] = (results["trace_od_circumference_mm"] / results["number_of_lines"]) - DEFAULT_TRACE_GAP_MM
-            results["average_trace_width_mm"] = (results["trace_width_id_mm"] + results["trace_width_od_mm"]) / 2
+        # Current conducting radial length = Trace length radial - (  DEFAULT_TRACE_WIDTH_CURVED_LINE / 2)
+        if results["trace_length_radial_mm"] is not None:
+            results["current_conducting_radial_mm"] = results["trace_length_radial_mm"] - (DEFAULT_TRACE_WIDTH_CURVED_LINE / 2)
         
-        
-
         # corrected conductor length calculation
         if results["number_of_lines"] is not None:
-            results["total_conductor_length_1pcb_m"] = (results["id_circumference_mm"] * results["number_of_lines"]) /1000
-            results["on_conductor_length_m"] = (results["total_conductor_length_1pcb_m"] / 3) * 2
-        else:
-            results["total_conductor_length_1pcb_m"] = None
-            results["on_conductor_length_m"] = None
+            results["total_conductor_length_m"] = (results["current_conducting_radial_mm"] * results["number_of_lines"] ) /1000
+        
+        # on conductor length = total conductor length / 3
+        if results["total_conductor_length_m"] is not None:
+            results["on_conductor_length_m"] = (results["total_conductor_length_m"] / 3) * 2
 
+        # 5. Set non-magnet area (must come after trace_radius_id_mm calculation)
+        results["non_magnet_area_mm"] = results.get("trace_radius_id_mm", 0)
+    
+        # radius OD = non magnet area + currentConductingRadial
+        if results["non_magnet_area_mm"] is not None and results["current_conducting_radial_mm"] is not None:
+            results["radius_od_mm"] = results["non_magnet_area_mm"] + results["current_conducting_radial_mm"]
+
+        # avg torque radius = (non magnet area + radius OD) / 2
+            results["avg_torque_radius_mm"] = (results["non_magnet_area_mm"] + results["radius_od_mm"]) / 2
+        
+        
         # conductor length(2 phase switch ON) = onConductorLength * number of pcb in series
         if results["on_conductor_length_m"] is not None and results["num_pcb_in_series"] is not None:
             results["conductor_length_2phase_m"] = results["on_conductor_length_m"] * results["num_pcb_in_series"]
 
-        else:
-            results["conductor_length_2phase_m"] = None
 
-        # radius calculations
-        if results["trace_length_radial_mm"] is not None and results["trace_radius_id_mm"] is not None:
-            results["current_conducting_radial_mm"] = results["trace_length_radial_mm"] - (results["trace_width_id_mm"] / 2)
+        # All 3 phase = num_pcb_in_series * total_conductor_length_m
+        results["total_pcb"] = results["num_pcb_in_series"] * results["total_conductor_length_m"]
 
-        if results["current_conducting_radial_mm"] < 0:
-            results["current_conducting_radial_mm"] = 0
-            results["status_messages"].append("Calculated current conducting radial length is negative")
-
-        # radius OD = non magnet area + currentConductingRadial
-        if results["non_magnet_area_mm"] is not None and results["current_conducting_radial_mm"] is not None:
-            results["radius_od_mm"] = results["non_magnet_area_mm"] + results["current_conducting_radial_mm"]
-            results["avg_torque_radius_mm"] = (results["non_magnet_area_mm"] + results["radius_od_mm"]) / 2 # avg torque radius = (non magnet area + radius OD) / 2
-        else:
-            results["radius_od_mm"] = None
-            results["avg_torque_radius_mm"] = None
-
-        # # avg torque radius = (non magnet area + radius OD) / 2
-        # if results["non_magnet_area_mm"] is not None and results["radius_od_mm"] is not None:
-        #     results["avg_torque_radius_mm"] = (results["non_magnet_area_mm"] + results["radius_od_mm"]) / 2
-
-        # else:
-        #     results["avg_torque_radius_mm"] = None
-
-        # stack up height
-        # if results["num_pcb_in_series"] is not None and results["layer_parallel"] is not None:
-        #     results["stack_up_height_mm"] = (results["num_pcb_in_series"] * results["layer_parallel"] * DEFAULT_PCB_THICKNESS_MM) + \
-        #                                      ((results["num_pcb_in_series"] * results["layer_parallel"] * DEFAULT_PM_ROTOR_THICKNESS_MM) + DEFAULT_PM_ROTOR_THICKNESS_MM) + \
-        #                                      (DEFAULT_AIR_GAP_MM * results["num_pcb_in_series"] * results["layer_parallel"])
-        
-
+        # Stack up height = ( number of pcb in series * layer in parallel connection * pcb board thickness) + ((( layer in parallel connection * number of pac in series  ) + 1 ) * pcb rotor thickness ) + (layer in parallel connection * number of pcb in series * DEFAULT_AIR_GAP_MM)
         if results["num_pcb_in_series"] is not None and results["layer_parallel"] is not None:
-            num_pcb = results["num_pcb_in_series"] * results["layer_parallel"]
-            results["stack_up_height_mm"] = (num_pcb * DEFAULT_PCB_THICKNESS_MM) + \
-                                             ((num_pcb + 1) * DEFAULT_PM_ROTOR_THICKNESS_MM) + \
-                                             (num_pcb * DEFAULT_AIR_GAP_MM)
+            results["stack_up_height_mm"] = (results["num_pcb_in_series"] * results["layer_parallel"] * DEFAULT_PCB_THICKNESS_MM) + \
+                                            (((results["layer_parallel"] * results["num_pcb_in_series"]) + 1) * DEFAULT_PM_ROTOR_THICKNESS_MM) + \
+                                            (results["layer_parallel"] * results["num_pcb_in_series"] * DEFAULT_AIR_GAP_MM)
 
-        else:
-            results["stack_up_height_mm"] = None
+        # Calculate the average trace width = ((((trace width ID + trace width OD) * trace thickness OD) / 2) + DEFAULT_TRACE_GAP_MM * DEFAULT_TRACE_GAP_MM )) / (trace length radial + DEFAULT_TRACE_GAP_MM )
+        if results["trace_length_radial_mm"] > 0:
+            results["average_trace_width_mm"] = ((((results["trace_width_id_mm"] + results["trace_thickness_od_mm"]) * results["trace_length_radial_mm"]) / 2) + (DEFAULT_TRACE_GAP_MM * DEFAULT_TRACE_GAP_MM)) / (results["trace_length_radial_mm"] + DEFAULT_TRACE_GAP_MM)
 
-    # Overall Size 
-    if results["stack_up_height_mm"] is not None and pcb_od_mm is not None:
-        results["size_mm"] = pcb_od_mm + results["stack_up_height_mm"] + 5 # +5mm for covering
-        # size_mm = pcb_od_mm + stack_up_height_mm + 5
+        # Required Copper Thickness = DEFAULT_ONE_PCB_OZ_FT2 * layer_parallel
+        if results["layer_parallel"] is not None:
+            results["required_copper_thickness_mm"] = DEFAULT_ONE_PCB_OZ_FT2 * results["layer_parallel"]
 
-    
-    # if results["voltage_v"] <= 0:
-    #         results["status_messages"].append("Voltage must be greater than 0.")
-    
-    # if results["current_a"] <= 0:
-    #     results["status_messages"].append("Current must be greater than 0.")
-    
+
+
+        
+        
 
     # Iterative calculation loop for primary outputs 
     # This loop attempts to calculate values multiple times as new dependencies might become available
     # Power → Voltage → Current → Force... not possible to calculate in one loop
 
-    max_iterations = 5 # A fixed number of iterations
+    max_iterations = 7 # A fixed number of iterations
     for _ in range(max_iterations):
 
 
         something_calculated_in_this_pass = False
-
-
-
-        '''       
-
-        # calculate Efficiency
-        # Efficiency = (power out / power in) * 100
-        # Efficiency can be calculated in two ways:
-        # 1. Using Power Out and Power In
-        # 2. Using Voltage and Current (with losses considered)
-        # 3. Using Force and Conductor Length (with losses considered)
-        # 4. Using RPM and KV Rating (if available)
-        # Efficiency without losses:
-
-        
-        # if results["efficiency_percent"] is None:
-        #     if results["power_out_kw"] is not None and results["power_in_kw"] is not None and results["power_in_kw"] > 0:
-        #         results["efficiency_percent"] = (results["power_out_kw"] / results["power_in_kw"]) * 100 # efficiency = (powerOut / powerIn) * 100
-        #         something_calculated_in_this_pass = True
-
-        # elif results["efficiency_percent"] > 100:
-        #     results["status_messages"].append("Warning: Efficiency exceeds 100% -> likely incorrect input.")
-        #     something_calculated_in_this_pass = True
-
-        # elif results["efficiency_percent"] <= 0:
-        #     results["status_messages"].append("Warning: Efficiency is 0 or negative -> likely incorrect input.")
-        #     something_calculated_in_this_pass = True
-
-        
-
-
-        # # Efficiency with losses:
-        # if results["efficiency_percent"] is None:
-        #     if results["voltage_v"] is not None and results["current_a"] is not None:
-        #         Pin = results["voltage_v"] * results["current_a"]
-
-        #         # --- NEW: Estimated resistance and no-load current ---
-        #         # Add these keys to user inputs or use default values
-        #         Rw =  0.2  # ohms (default guess)
-        #         I0 =  0.3       # A (default no-load current)
-
-        #         Pc = (results["current_a"] ** 2) * Rw
-        #         Pfl = results["voltage_v"] * I0
-
-        #         eff = (Pin - Pc - Pfl) / Pin if Pin > 0 else None
-
-        #         if eff is not None:
-        #             results["efficiency_percent"] = eff * 100
-        #             something_calculated_in_this_pass = True
-
-        #     elif results["power_out_kw"] is not None and results["power_in_kw"] is not None and results["power_in_kw"] > 0:
-        #         results["efficiency_percent"] = (results["power_out_kw"] / results["power_in_kw"]) * 100
-        #         something_calculated_in_this_pass = True
-
-        # elif results["efficiency_percent"] > 100:
-        #     results["status_messages"].append("Warning: Efficiency exceeds 100% -> likely incorrect input.")
-        #     something_calculated_in_this_pass = True
-
-        # elif results["efficiency_percent"] <= 0:
-        #     results["status_messages"].append("Warning: Efficiency is 0 or negative -> likely incorrect input.")
-        #     something_calculated_in_this_pass = True
-        
-
-
-
-        # if results["force_n"] is not None and results["conductor_length_2phase_m"] is not None and DEFAULT_MAGNET_STRENGTH_T is not None:
-        #     I = results["force_n"] / (results["conductor_length_2phase_m"] * DEFAULT_MAGNET_STRENGTH_T) # current = force / (conductor Length * magnet Strength)
-        #     V = results.get("voltage_v", )
-        #     if V is not None and V > 0:
-        #         Pin = I * V 
-        #         Rw = 0.2  # ohms (default guess)
-        #         I0 = 0.3  # A (default no-load current)
-
-        #         Pcu = I**2 * Rw
-        #         Pcore = V * I0
-        #         if Pin > 0:
-        #             efficiency = (Pin - Pcu - Pcore) / Pin
-        #             results["efficiency_percent"] = efficiency * 100
-        #             something_calculated_in_this_pass = True
-        '''
 
 
 
@@ -578,12 +515,7 @@ def calculate_results(inputs):
 
 
 
-        # voltage from cells in series
-        if results["voltage_v"] is None and results.get("num_cell_series") is not None:
-            results["voltage_v"] = results["num_cell_series"] * DEFAULT_CELL_UNIT_CHARGE_V
-            something_calculated_in_this_pass = True
-
-
+    
 
         # Calculate Power Out from Torque and RPM
         if results["power_out_kw"] is None:
@@ -598,17 +530,22 @@ def calculate_results(inputs):
                 results["rpm"] = (results["power_out_kw"] * 1000 * 60) / ( results["torque_nm"] * (2 * math.pi) )  # RPM = (powerOut * 1000 * 60) / (torque * 2 * pi)
                 something_calculated_in_this_pass = True
 
-        # Calculate Voltage from Power In and Current
-        if results["voltage_v"] is None:
-            if results["power_in_kw"] is not None and results["current_a"] is not None and results["current_a"] != 0:
-                results["voltage_v"] = (results["power_in_kw"] * 1000) / results["current_a"]
-                something_calculated_in_this_pass = True
-
-
-
+       
 
 
         # ----------------------- Electrical Input Calculations -----------------------
+
+        # Calculate Voltage (V)
+        if not results.get("voltage_v") and results.get("num_cell_series") is not None:
+            # If voltage is not provided, calculate it from number of cells in series
+            results["voltage_v"] = results["num_cell_series"] * DEFAULT_CELL_UNIT_CHARGE_V
+            something_calculated_in_this_pass = True
+
+        elif results["voltage_v"] is None:
+            # If voltage is still not known, check if current and power are available
+            if results["current_a"] is not None and results["power_in_kw"] is not None and results["current_a"] > 0:
+                results["voltage_v"] = (results["power_in_kw"] * 1000) / results["current_a"] # voltage = (powerIn * 1000) / current
+                something_calculated_in_this_pass = True
 
         # Calculate Power In (kW)
 
@@ -628,35 +565,11 @@ def calculate_results(inputs):
                 results["current_a"] = (results["power_in_kw"] * 1000) / results["voltage_v"] # current = (powerIn * 1000) / voltage
                 something_calculated_in_this_pass = True
                 
-            elif results["force_n"] is not None and results["conductor_length_2phase_m"] is not None and DEFAULT_MAGNET_STRENGTH_T is not None and  \
-                results["conductor_length_2phase_m"] > 0:
+            elif results["force_n"] is not None and results["conductor_length_2phase_m"] is not None and DEFAULT_MAGNET_STRENGTH_T is not None and results["conductor_length_2phase_m"] > 0:
 
                 results["current_a"] = results["force_n"] / (results["conductor_length_2phase_m"] * DEFAULT_MAGNET_STRENGTH_T) # current = force / (conductor Length * magnet Strength)
                 something_calculated_in_this_pass = True
 
-
-
-        # Calculate Voltage (V)
-
-        # if results["voltage_v"] is None:
-        #     if inputs.get("num_cell_series") is not None:
-        #         results["voltage_v"] = inputs["num_cell_series"] * DEFAULT_CELL_UNIT_CHARGE_V
-        #         something_calculated_in_this_pass = True
-
-
-
-        # if results["voltage_v"] is None:
-        #     if results["power_in_kw"] is not None and results["current_a"] is not None and results["current_a"] > 0:
-        #         results["voltage_v"] = (results["power_in_kw"] * 1000) / results["current_a"] # voltage = (powerIn * 1000) / current
-        #         something_calculated_in_this_pass = True
-
-        #     elif results["rpm"] is not None and results.get("kv_rating") is not None and results["kv_rating"] > 0:
-        #         results["voltage_v"] = results["rpm"] / results["kv_rating"] # voltage = rpm / KV rating
-        #         something_calculated_in_this_pass = True
-
-        #     elif results["num_cell_series"] is not None:
-        #         results["voltage_v"] = results["num_cell_series"] * DEFAULT_CELL_UNIT_CHARGE_V
-        #         something_calculated_in_this_pass = True
 
 
                 
@@ -672,19 +585,7 @@ def calculate_results(inputs):
                 
                 something_calculated_in_this_pass = True
 
-            elif (results["torque_nm"] is not None and results["avg_torque_radius_mm"] is not None and results["avg_torque_radius_mm"] > 0):
-                results["force_n"] = results["torque_nm"] / (results["avg_torque_radius_mm"] / 1000) # force = torque / (avg torque radius / 1000)
-                something_calculated_in_this_pass = True
-            
-            # If kv_rating in RPM/V is known:
-            elif results.get("kv_rating") is not None and results["voltage_v"] is not None and results["voltage_v"] > 0:
-                kV_rpm_per_V = results["kv_rating"]
-                kT_Nm_per_A = 60 / (2*math.pi * kV_rpm_per_V)  # approximate relation in SI
-                if results["current_a"] is not None:
-                    results["force_n"] = kT_Nm_per_A * results["current_a"] / (results["avg_torque_radius_mm"] / 1000) # force = (kT * I) / (avg torque radius / 1000)
-                    something_calculated_in_this_pass = True
-
-        
+           
 
         # Calculate Torque (Nm)
         if results["torque_nm"] is None:
@@ -693,9 +594,6 @@ def calculate_results(inputs):
                 something_calculated_in_this_pass = True
 
             elif results["power_out_kw"] is not None and results["rpm"] is not None and results["rpm"] > 0:
-                # omega = 2 * math.pi * results["rpm"] / 60
-                # if omega > 0:
-                # results["torque_nm"] = (results["power_out_kw"] * 1000) / omega
                 results["torque_nm"] = (results["power_out_kw"] * 1000 * 60) / (results["rpm"] * 2 * math.pi) # torque = (powerOut * 1000 * 60) / (rpm * 2 * Math.PI)
                 something_calculated_in_this_pass = True
 
@@ -728,13 +626,15 @@ def calculate_results(inputs):
 
         # Calculate Overall Size (mm)
         if results["size_mm"] is None and results["pcb_stator_od_mm"] is not None and results["stack_up_height_mm"] is not None:
-            results["size_mm"] = results["pcb_stator_od_mm"] + results["stack_up_height_mm"] + 5
+            # pcb diameter = pcb_stator_od_mm 
+            results["pcb_diameter_mm"] = results["pcb_stator_od_mm"]
             something_calculated_in_this_pass = True
 
-        # If size_mm is still None, it means we cannot calculate size without PCB OD or stack height
-        elif results["size_mm"] is None:
-            results["status_messages"].append("Overall size could not be calculated due to missing PCB Stator OD or stack height.")
+            # pcb height = stack_up_height_mm + 10
+            results["pcb_height_mm"] = results["stack_up_height_mm"] + 10
+            something_calculated_in_this_pass = True
 
+        
         # Calculate Weight (g)
         if results["weight_g"] is None and results["total_pcb"] is not None and pcb_params is not None:
             results["weight_g"] = results["total_pcb"] * pcb_params["weight_factor"] # weight(gm) = (total pcb * (factor))
@@ -761,10 +661,7 @@ def calculate_results(inputs):
                 results["kv_rating"] = results["rpm"] / results["voltage_v"] # KV rating = rpm / voltage 
                 something_calculated_in_this_pass = True
 
-            elif results["rpm"] is not None and inputs.get("voltage_v") is not None and inputs["voltage_v"] > 0:
-                # If voltage was provided as an input, use it to calculate kV rating
-                results["kv_rating"] = results["rpm"] / inputs["voltage_v"] # KV rating = rpm / voltage
-                something_calculated_in_this_pass = True
+            
 
         # Calculate Estimated Cost (₹)
         if results["cost_inr"] is None and results["total_pcb"] is not None and pcb_params is not None:
@@ -795,7 +692,8 @@ def calculate_results(inputs):
 
     # After all iterations, add status messages for any remaining uncalculated outputs
     final_outputs = ["power_out_kw", "torque_nm", "rpm", "force_n", "current_a", "voltage_v", "power_in_kw",
-                      "size_mm", "weight_g", "power_density_kw_kg", "kv_rating", "cost_inr", "efficiency_percent"]
+                      "size_mm", "weight_g", "power_density_kw_kg", "kv_rating", "cost_inr", "efficiency_percent", "conductor_length_2phase_m",
+                      "total_pcb", "num_cell_series", "pcb_stator_od_mm", "status_messages"]
 
     for key in final_outputs:
         if results.get(key) is None:
@@ -880,6 +778,8 @@ def display_results(results):
     # Calculated Dimensions
     # --------------------------
     print("\nCalculated Dimensions:")
+    # print_result("PCB Diameter (mm)", "pcb_diameter_mm")
+    print_result("PCB Height (mm)", "pcb_height_mm")
     print_result("Overall Size (mm)", "size_mm")
 
     # --------------------------
@@ -890,6 +790,52 @@ def display_results(results):
     print_result("Power Density (kW/kg)", "power_density_kw_kg")
     print_result("kV Rating", "kv_rating")
     print_result("Estimated Cost (₹)", "cost_inr")
+
+
+    """
+    # --------------------------
+    # temprorary output for debugging
+    # --------------------------
+    print("\n--- Debugging Output ---")
+    
+    print(f"Stack Up Height (mm): {fmt(results.get('stack_up_height_mm'))}")
+    print(f"ID Circumference (mm): {fmt(results.get('id_circumference_mm'))}")
+    print(f"Trace ID Circumference (mm): {fmt(results.get('trace_id_circumference_mm'))}")
+    print(f"Trace Radius ID (mm): {fmt(results.get('trace_radius_id_mm'))}")
+    print(f"Radial Gap ID (mm): {fmt(results.get('radial_gap_id_mm'))}")
+    print(f"Radial Gap OD (mm): {fmt(results.get('radial_gap_od_mm'))}")
+    print(f"Trace Radius OD (mm): {fmt(results.get('trace_radius_od_mm'))}")
+    print(f"Trace OD Circumference (mm): {fmt(results.get('trace_od_circumference_mm'))}")
+    print(f"Trace Thickness OD (mm): {fmt(results.get('trace_thickness_od_mm'))}")
+    print(f"Average Trace Width (mm): {fmt(results.get('average_trace_width_mm'))}")
+
+    print(f"Trace Width ID (mm): {fmt(results.get('trace_width_id_mm'))}")
+    print(f"Trace Width OD (mm): {fmt(results.get('trace_width_od_mm'))}")
+    print(f"Number of Lines per Phase: {fmt(results.get('num_lines_per_phase'))}")
+    print(f"Number of Lines 180: {fmt(results.get('num_lines_180'))}")
+    print(f"Number of Stator Coils: {fmt(results.get('num_stator_coils'))}")
+    print(f"Magnet Poles: {fmt(results.get('magnet_poles'))}")
+    print(f"Number of Coils per Phase: {fmt(results.get('num_coils_per_phase'))}")
+    print(f"Coil per Phase 180: {fmt(results.get('coil_per_phase_180'))}")
+    print(f"Number of Lines: {fmt(results.get('number_of_lines'))}")
+    
+    print(f"Trace Length Radial (mm): {fmt(results.get('trace_length_radial_mm'))}")
+    print(f"Current Conducting Radial (mm): {fmt(results.get('current_conducting_radial_mm'))}")
+    print(f"Total Conductor Length (m): {fmt(results.get('total_conductor_length_m'))}")
+    print(f"On Conductor Length (m): {fmt(results.get('on_conductor_length_m'))}")
+    print(f"Required Copper Thickness (mm): {fmt(results.get('required_copper_thickness_mm'))}")
+    print(f"Non Magnet Area (mm): {fmt(results.get('non_magnet_area_mm'))}")
+    print(f"Radius OD (mm): {fmt(results.get('radius_od_mm'))}")
+    print(f"Average Torque Radius (mm): {fmt(results.get('avg_torque_radius_mm'))}")
+    print(f"Conductor Length (2 Phase ON) (m): {fmt(results.get('conductor_length_2phase_m'))}")
+    print(f"Total PCB: {fmt(results.get('total_pcb'))}")
+
+    print(f"Trace Thickness ID (mm): {fmt(results.get('trace_thickness_id_mm'))}")
+    print(f"PCB Stator ID (mm): {fmt(results.get('pcb_stator_id_mm'))}")
+    print(f"PCB Stator OD (mm): {fmt(results.get('pcb_stator_od_mm'))}")
+    """
+
+
 
     # --------------------------
     # Status Messages
