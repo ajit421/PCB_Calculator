@@ -778,9 +778,9 @@ def display_results(results):
     # Calculated Dimensions
     # --------------------------
     print("\nCalculated Dimensions:")
-    print_result("PCB Diameter (mm)", "pcb_diameter_mm")
+    # print_result("PCB Diameter (mm)", "pcb_diameter_mm")
     print_result("PCB Height (mm)", "pcb_height_mm")
-    # print_result("Overall Size (mm)", "size_mm")
+    print_result("Overall Size (mm)", "size_mm")
 
     # --------------------------
     # Additional Metrics
@@ -790,6 +790,51 @@ def display_results(results):
     print_result("Power Density (kW/kg)", "power_density_kw_kg")
     print_result("kV Rating", "kv_rating")
     print_result("Estimated Cost (₹)", "cost_inr")
+
+
+    """
+    # --------------------------
+    # temprorary output for debugging
+    # --------------------------
+    print("\n--- Debugging Output ---")
+    
+    print(f"Stack Up Height (mm): {fmt(results.get('stack_up_height_mm'))}")
+    print(f"ID Circumference (mm): {fmt(results.get('id_circumference_mm'))}")
+    print(f"Trace ID Circumference (mm): {fmt(results.get('trace_id_circumference_mm'))}")
+    print(f"Trace Radius ID (mm): {fmt(results.get('trace_radius_id_mm'))}")
+    print(f"Radial Gap ID (mm): {fmt(results.get('radial_gap_id_mm'))}")
+    print(f"Radial Gap OD (mm): {fmt(results.get('radial_gap_od_mm'))}")
+    print(f"Trace Radius OD (mm): {fmt(results.get('trace_radius_od_mm'))}")
+    print(f"Trace OD Circumference (mm): {fmt(results.get('trace_od_circumference_mm'))}")
+    print(f"Trace Thickness OD (mm): {fmt(results.get('trace_thickness_od_mm'))}")
+    print(f"Average Trace Width (mm): {fmt(results.get('average_trace_width_mm'))}")
+
+    print(f"Trace Width ID (mm): {fmt(results.get('trace_width_id_mm'))}")
+    print(f"Trace Width OD (mm): {fmt(results.get('trace_width_od_mm'))}")
+    print(f"Number of Lines per Phase: {fmt(results.get('num_lines_per_phase'))}")
+    print(f"Number of Lines 180: {fmt(results.get('num_lines_180'))}")
+    print(f"Number of Stator Coils: {fmt(results.get('num_stator_coils'))}")
+    print(f"Magnet Poles: {fmt(results.get('magnet_poles'))}")
+    print(f"Number of Coils per Phase: {fmt(results.get('num_coils_per_phase'))}")
+    print(f"Coil per Phase 180: {fmt(results.get('coil_per_phase_180'))}")
+    print(f"Number of Lines: {fmt(results.get('number_of_lines'))}")
+    
+    print(f"Trace Length Radial (mm): {fmt(results.get('trace_length_radial_mm'))}")
+    print(f"Current Conducting Radial (mm): {fmt(results.get('current_conducting_radial_mm'))}")
+    print(f"Total Conductor Length (m): {fmt(results.get('total_conductor_length_m'))}")
+    print(f"On Conductor Length (m): {fmt(results.get('on_conductor_length_m'))}")
+    print(f"Required Copper Thickness (mm): {fmt(results.get('required_copper_thickness_mm'))}")
+    print(f"Non Magnet Area (mm): {fmt(results.get('non_magnet_area_mm'))}")
+    print(f"Radius OD (mm): {fmt(results.get('radius_od_mm'))}")
+    print(f"Average Torque Radius (mm): {fmt(results.get('avg_torque_radius_mm'))}")
+    print(f"Conductor Length (2 Phase ON) (m): {fmt(results.get('conductor_length_2phase_m'))}")
+    print(f"Total PCB: {fmt(results.get('total_pcb'))}")
+
+    print(f"Trace Thickness ID (mm): {fmt(results.get('trace_thickness_id_mm'))}")
+    print(f"PCB Stator ID (mm): {fmt(results.get('pcb_stator_id_mm'))}")
+    print(f"PCB Stator OD (mm): {fmt(results.get('pcb_stator_od_mm'))}")
+    """
+
 
 
     # --------------------------
