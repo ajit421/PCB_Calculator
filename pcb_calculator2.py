@@ -792,6 +792,7 @@ def display_results(results):
     print_result("Estimated Cost (₹)", "cost_inr")
 
 
+
     # --------------------------
     # Status Messages
     # --------------------------
