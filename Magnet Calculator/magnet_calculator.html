@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PCB Magnet Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            margin: 20px;
+        }
+
+        .calculator-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(19, 18, 18, 0.1);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .calculator-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(18, 16, 16, 0.15);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color:#1e293b;
+            background: linear-gradient(135deg, #1312125b, #20222276);
+            /* -webkit-background-clip: text; */
+            margin-bottom: 10px;
+            display: inline-block;
+            padding: 10px;
+            border: none;
+            transition: background 0.3s ease, color 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+        }
+
+
+        .subtitle {
+            color: #0a0a0a;
+            font-size: 1.1rem;
+        }
+
+        .magnet-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+
+        .tab-btn {
+            background: #f1f5f9;
+            /* color: #334155; */
+            border: none;
+            /* background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); */
+            color: rgb(21, 15, 15);
+            /* border: rgb(0, 255, 60); */
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: flex;
+        }
+
+        .tab-btn:hover {
+            transform: translateY(-2px);
+            background: #dbeafe;
+            box-shadow: 0 6px 20px rgb(59, 130, 246, 0.4);
+        }
+
+        .tab-btn.active {
+            background: #3b82f6;
+            color: white;
+            /* background: linear-gradient(135deg, #4466aee1, #8185dacf); */
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .calculator-section {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .calculator-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.95rem;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .input-field:focus {
+            
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+            transform: scale(1.02);
+        }
+
+        .unit {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888;
+            font-weight: 600;
+            pointer-events: none;
+        }
+
+        .result-section {
+            background: linear-gradient(135deg, #303032d0, #170e20);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            margin-top: 20px;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .result-section:hover {
+            transform: scale(1.02);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+        }
+
+        .result-label {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .result-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #bdccbdfc;
+            text-shadow: none;
+            margin-bottom: 5px;
+        }
+
+        .result-unit {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .error-message {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+            font-weight: 600;
+            display: none;
+        }
+
+        .magnet-visual {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 3rem;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .calculator-container {
+                padding: 25px;
+                margin: 10px;
+            }
+
+            .title {
+                font-size: 2rem;
+            }
+
+            .magnet-tabs {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .tab-btn {
+                width: 200px;
+            }
+
+            .input-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .result-value {
+                font-size: 2rem;
+            }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .input-field:invalid {
+            border-color: #4ecdc4;
+        }
+
+        .input-field:valid {
+            border-color: #4ecdc4;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="calculator-container">
+        <div class="header">
+            <h1 class="title">🧲 PCB Magnet Calculator</h1>
+            <p class="subtitle">Calculate Surface magnetic Value in real-time</p>
+        </div>
+
+        <div class="magnet-tabs">
+            <button class="tab-btn active" data-tab="block" type="button" aria-pressed="true">🔲 Block Magnet</button>
+            <button class="tab-btn" data-tab="ring" type="button" aria-pressed="false">⭕ Ring Magnet</button>
+        </div>
+
+        <!-- Block Magnet Calculator -->
+        <div id="block" class="calculator-section active">
+            <!-- <div class="magnet-visual">🔲</div> -->
+            <div class="input-grid">
+                <div class="input-group">
+                    <label class="input-label">Remanence (Br)</label>
+                    <input type="number" class="input-field" id="block_remanence" step="0.01" min="0" value="1.47">
+                    <span class="unit">T</span>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Hight (H)</label>
+                    <input type="number" class="input-field" id="block_height" step="0.1" min="0" value="3">
+                    <span class="unit">mm</span>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Length (L)</label>
+                    <input type="number" class="input-field" id="block_length" step="0.1" min="0" value="11.2">
+                    <span class="unit">mm</span>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Width OD (W)</label>
+                    <input type="number" class="input-field" id="block_width_od" step="0.1" min="0" value="10">
+                    <span class="unit">mm</span>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Width ID (W)</label>
+                    <input type="number" class="input-field" id="block_width_id" step="0.1" min="0" value="5.15">
+                    <span class="unit">mm</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ring Magnet Calculator -->
+        <div id="ring" class="calculator-section">
+            <!-- <div class="magnet-visual">⭕</div> -->
+            <div class="input-grid">
+                <div class="input-group">
+                    <label class="input-label">Remanence (Br)</label>
+                    <input type="number" class="input-field" id="ring_remanence" step="0.01" min="0" value="1.47">
+                    <span class="unit">T</span>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Hight (H)</label>
+                    <input type="number" class="input-field" id="ring_height" step="0.1" min="0" value="20">
+                    <span class="unit">mm</span>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Outer Diameter (OD)</label>
+                    <input type="number" class="input-field" id="ring_od" step="0.1" min="0" value="40">
+                    <span class="unit">mm</span>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Inner Diameter (ID)</label>
+                    <input type="number" class="input-field" id="ring_id" step="0.1" min="0" value="20">
+                    <span class="unit">mm</span>
+                </div>
+            </div>
+        </div>
+
+
+
+        <div class="result-section pulse" id="result">
+            <div class="result-label">Surface magnetic Value</div>
+            <div class="result-value" id="result_value">0.00000</div>
+            <div class="result-unit">Tesla (T)</div>
+        </div>
+
+        <div class="error-message" id="error">
+            Error in calculation
+        </div>
+    </div>
+
+    <script>
+        // Calculation functions
+        function blockMagnet(remanenceTesla, heightMm, lengthMm, widthODMm, widthIDMm) {
+            // Validate input
+            if ([remanenceTesla, heightMm, lengthMm, widthODMm, widthIDMm].some(v => isNaN(v) || v < 0)) {
+                return "Error: All values must be non-negative numbers.";
+            }
+            const averageWidth = (widthODMm + widthIDMm) / 2;
+            if (averageWidth === 0 || lengthMm === 0) {
+                return "Error: Length and average width must be greater than zero.";
+            }
+            const sqrtInnerTerm = Math.pow(lengthMm, 2) + Math.pow(averageWidth, 2) + 4 * Math.pow(heightMm, 2);
+            const numerator = 2 * heightMm * Math.sqrt(sqrtInnerTerm);
+            const denominator = lengthMm * averageWidth;
+            if (denominator === 0) {
+                return "Error: Division by zero in block magnet calculation.";
+            }
+            const arctanArgument = numerator / denominator;
+            const magneticField = (remanenceTesla / Math.PI) * Math.atan(arctanArgument);
+            return magneticField;
+        }
+
+        function ringMagnet(remanenceTesla, heightMm, ODmm, IDmm) {
+            if ([remanenceTesla, heightMm, ODmm, IDmm].some(v => isNaN(v) || v < 0)) {
+                return "Error: All values must be non-negative numbers.";
+            }
+            if (ODmm <= IDmm) {
+                return "Error: Outer diameter must be greater than inner diameter.";
+            }
+            const heightM = heightMm / 1000;
+            const ODM = ODmm / 1000;
+            const IDM = IDmm / 1000;
+            const rOuterM = ODM / 2;
+            const rInnerM = IDM / 2;
+            if ((Math.pow(rOuterM, 2) + Math.pow(heightM, 2)) === 0 ||
+                (Math.pow(rInnerM, 2) + Math.pow(heightM, 2)) === 0) {
+                return "Error: Invalid geometry for ring magnet calculation.";
+            }
+            const outerTerm = heightM / Math.sqrt(Math.pow(rOuterM, 2) + Math.pow(heightM, 2));
+            const innerTerm = heightM / Math.sqrt(Math.pow(rInnerM, 2) + Math.pow(heightM, 2));
+            const magneticField = (remanenceTesla / 2) * (outerTerm - innerTerm);
+            return magneticField;
+        }
+
+        function cylinderMagnet(remanenceTesla, heightMm, diameterMm) {
+            if ([remanenceTesla, heightMm, diameterMm].some(v => isNaN(v) || v < 0)) {
+                return "Error: All values must be non-negative numbers.";
+            }
+            const heightM = heightMm / 1000;
+            const diameterM = diameterMm / 1000;
+            const radiusM = diameterM / 2;
+            if ((Math.pow(radiusM, 2) + Math.pow(heightM, 2)) === 0) {
+                return "Error: Invalid geometry for cylinder magnet calculation.";
+            }
+            const magneticField = (remanenceTesla / 2) * (heightM / Math.sqrt(Math.pow(radiusM, 2) + Math.pow(heightM, 2)));
+            return magneticField;
+        }
+
+        // UI functions
+        function switchTab(tabName) {
+            // Update tab buttons and aria-pressed
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+                btn.setAttribute('aria-pressed', 'false');
+                if (btn.getAttribute('data-tab') === tabName) {
+                    btn.classList.add('active');
+                    btn.setAttribute('aria-pressed', 'true');
+                }
+            });
+            // Update calculator sections
+            document.querySelectorAll('.calculator-section').forEach(section => section.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            // Recalculate immediately
+            calculateMagneticField();
+        }
+
+        function calculateMagneticField() {
+            const activeTab = document.querySelector('.calculator-section.active').id;
+            let result = 0;
+            try {
+                if (activeTab === 'block') {
+                    const remanence = parseFloat(document.getElementById('block_remanence').value);
+                    const height = parseFloat(document.getElementById('block_height').value);
+                    const length = parseFloat(document.getElementById('block_length').value);
+                    const widthOD = parseFloat(document.getElementById('block_width_od').value);
+                    const widthID = parseFloat(document.getElementById('block_width_id').value);
+                    result = blockMagnet(remanence, height, length, widthOD, widthID);
+                } else if (activeTab === 'ring') {
+                    const remanence = parseFloat(document.getElementById('ring_remanence').value);
+                    const height = parseFloat(document.getElementById('ring_height').value);
+                    const od = parseFloat(document.getElementById('ring_od').value);
+                    const id = parseFloat(document.getElementById('ring_id').value);
+                    result = ringMagnet(remanence, height, od, id);
+                }
+                // Display result
+                const resultElement = document.getElementById('result_value');
+                const errorElement = document.getElementById('error');
+                const resultSection = document.getElementById('result');
+                if (typeof result === 'string') {
+                    // Error case
+                    errorElement.textContent = result;
+                    errorElement.style.display = 'block';
+                    resultSection.style.display = 'none';
+                } else {
+                    // Success case
+                    resultElement.textContent = isFinite(result) ? result.toFixed(6) : 'NaN';
+                    errorElement.style.display = 'none';
+                    resultSection.style.display = 'block';
+                    // Add pulse animation for visual feedback
+                    resultSection.classList.remove('pulse');
+                    setTimeout(() => resultSection.classList.add('pulse'), 10);
+                }
+            } catch (error) {
+                document.getElementById('error').textContent = 'Calculation error: ' + error.message;
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('result').style.display = 'none';
+            }
+        }
+
+        // Event listeners for real-time calculation and tab switching
+        document.addEventListener('DOMContentLoaded', function () {
+            // Add event listeners to all input fields
+            document.querySelectorAll('.input-field').forEach(input => {
+                input.addEventListener('input', calculateMagneticField);
+                input.addEventListener('change', calculateMagneticField);
+                // Visual feedback for input validation
+                input.addEventListener('input', function () {
+                    if (this.value === '' || isNaN(this.value)) {
+                        this.style.borderColor = '#e0e0e0';
+                    } else if (parseFloat(this.value) < 0) {
+                        this.style.borderColor = '#ff6b6b';
+                    } else {
+                        this.style.borderColor = '#4ecdc4';
+                    }
+                });
+            });
+            // Tab switching with event delegation
+            document.querySelector('.magnet-tabs').addEventListener('click', function (e) {
+                if (e.target.classList.contains('tab-btn')) {
+                    switchTab(e.target.getAttribute('data-tab'));
+                }
+            });
+            // Keyboard accessibility for tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        switchTab(btn.getAttribute('data-tab'));
+                    }
+                });
+            });
+            // Initial calculation
+            calculateMagneticField();
+        });
+    </script>
+</body>
+
+</html>
