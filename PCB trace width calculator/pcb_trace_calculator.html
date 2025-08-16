@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PCB Trace Width Calculator</title>
+    <!-- <link rel="stylesheet" href="styles.css"> -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #243c54 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            min-height: 500px;
+        }
+
+        .inputs-section {
+            padding: 40px;
+            background: white;
+            border-right: 1px solid #e0e0e0;
+        }
+
+        .results-section {
+            padding: 40px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 0.95em;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .input-row input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .input-row input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .input-row select {
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 100px;
+        }
+
+        .input-row select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .results-title {
+            font-size: 1.5em;
+            margin-bottom: 30px;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .result-card {
+            background: rgba(124, 251, 162, 0.852);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(13, 13, 13, 0.08);
+            border-left: 4px solid #198604;
+            border-right: 4px solid #198604;
+            transition: transform 0.3s ease;
+        }
+
+        .result-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .result-card.external {
+            border-left-color: #379d1b;
+        }
+
+        .result-card h3 {
+            color: rgb(26, 33, 40);
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: #000000;
+        }
+
+        .result-value {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: #2c3e50;
+            background: #f8f9fa;
+            padding: 4px 8px;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+
+        .width-display {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .error {
+            color: #e74c3c;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+
+            .inputs-section {
+                border-right: none;
+                border-bottom: 1px solid #e0e0e0;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .container {
+                margin: 10px;
+            }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.02);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+    </style>
+
+
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>PCB Trace Width Calculator</h1>
+            <p>Real-time calculation of trace width for internal and external layers</p>
+        </div>
+
+        <div class="content">
+            <div class="inputs-section">
+                <div class="input-group">
+                    <label for="current">Current (A)</label>
+                    <div class="input-row">
+                        <input type="number" id="current" step="0.1" value="15" min="0">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="ambient">Ambient Temperature</label>
+                    <div class="input-row">
+                        <input type="number" id="ambient" step="0.1" value="30">
+                        <select id="ambientUnit">
+                            <option value="°C">°C</option>
+                            <option value="°F">°F</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="thickness">Thickness</label>
+                    <div class="input-row">
+                        <input type="number" id="thickness" step="0.1" value="40">
+                        <select id="thicknessUnit">
+                            <option value="oz/ft²">oz/ft²</option>
+                            <option value="mil">mil</option>
+                            <option value="mm">mm</option>
+                            <option value="µm">µm</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="trace">Trace Length</label>
+                    <div class="input-row">
+                        <input type="number" id="trace" step="0.1" value="10">
+                        <select id="traceUnit">
+                            <option value="in">in</option>
+                            <option value="ft">ft</option>
+                            <option value="mil">mil</option>
+                            <option value="mm">mm</option>
+                            <option value="µm">µm</option>
+                            <option value="cm">cm</option>
+                            <option value="m">m</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="rise">Temperature Rise</label>
+                    <div class="input-row">
+                        <input type="number" id="rise" step="0.1" value="30" min="0">
+                        <select id="riseUnit">
+                            <option value="°C">°C</option>
+                            <option value="°F">°F</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="results-section">
+                <h2 class="results-title">Calculation Results</h2>
+
+                <div class="result-card internal">
+                    <h3> Internal Layers</h3>
+                    <div class="width-display" id="internalWidth">
+                        Width: Loading...
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Resistance:</span>
+                        <span class="result-value" id="internalResistance">- Ω</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Voltage Drop:</span>
+                        <span class="result-value" id="internalVoltage">- V</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Power Loss:</span>
+                        <span class="result-value" id="internalPower">- W</span>
+                    </div>
+                </div>
+
+                <div class="result-card external">
+                    <h3> External Layers in Air</h3>
+                    <div class="width-display" id="externalWidth">
+                        Width: Loading...
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Resistance:</span>
+                        <span class="result-value" id="externalResistance">- Ω</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Voltage Drop:</span>
+                        <span class="result-value" id="externalVoltage">- V</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Power Loss:</span>
+                        <span class="result-value" id="externalPower">- W</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Conversion functions
+        function milToMm(mil) {
+            return mil * 0.0254;
+        }
+
+        function milToUm(mil) {
+            return mil * 25.4;
+        }
+
+        // Core calculation functions
+        function external(current, rise) {
+            const k = 0.048;
+            const b = 0.44;
+            const c = 0.725;
+            return Math.pow(current / (k * Math.pow(rise, b)), 1 / c);
+        }
+
+        function internal(current, rise) {
+            const k = 0.024;
+            const b = 0.44;
+            const c = 0.725;
+            return Math.pow(current / (k * Math.pow(rise, b)), 1 / c);
+        }
+
+        function calcTraceWidth(current, thickness, rise, ambient, trace, thicknessUnit, riseUnit, ambientUnit, traceUnit) {
+            try {
+                // Convert Thickness to cm
+                let thicknessCm = thickness;
+                if (thicknessUnit === "oz/ft²") {
+                    thicknessCm *= 0.0035; // oz to mm, then to cm
+                } else if (thicknessUnit === "mil") {
+                    thicknessCm *= 2.54e-3; // mil to cm
+                } else if (thicknessUnit === "mm") {
+                    thicknessCm *= 0.1; // mm to cm
+                } else if (thicknessUnit === "µm") {
+                    thicknessCm *= 1e-4; // µm to cm
+                }
+
+                // Convert Temperature Rise to °C
+                let riseC = rise;
+                if (riseUnit === "°F") {
+                    riseC = (rise * 5) / 9;
+                }
+
+                // Convert Ambient Temperature to °C
+                let ambientC = ambient;
+                if (ambientUnit === "°F") {
+                    ambientC = (ambient - 32) * 5 / 9;
+                }
+
+                // Convert Trace Length to cm
+                let traceCm = trace;
+                if (traceUnit === "in") {
+                    traceCm = trace / 0.393701;
+                } else if (traceUnit === "ft") {
+                    traceCm = trace / 0.032808;
+                } else if (traceUnit === "mil") {
+                    traceCm = trace / 393.7008;
+                } else if (traceUnit === "mm") {
+                    traceCm = trace / 10;
+                } else if (traceUnit === "µm") {
+                    traceCm = trace / 10000;
+                } else if (traceUnit === "m") {
+                    traceCm = trace / 0.01;
+                }
+
+                // Internal Layer Calculation
+                const Ai = internal(current, riseC);
+                const AiM2 = Ai * 2.54 * 2.54 / 1e6; // Convert mil² to m²
+                const internalWidth = AiM2 / thicknessCm; // in m
+
+                const internalWidthMil = internalWidth / 2.54e-3;
+                const internalWidthMm = milToMm(internalWidthMil);
+                const internalWidthUm = milToUm(internalWidthMil);
+
+                // Resistance Calculation
+                const internalResistance = ((1.7e-6) * traceCm / AiM2) * (1 + 3.9e-3 * ((ambientC + riseC) - 25));
+                const internalVoltage = internalResistance * current;
+                const internalPower = current * current * internalResistance;
+
+                // External Layer Calculation
+                const Ae = external(current, riseC);
+                const AeM2 = Ae * 2.54 * 2.54 / 1e6; // Convert mil² to m²
+                const externalWidth = AeM2 / thicknessCm; // in m
+
+                const externalWidthMil = externalWidth / 2.54e-3;
+                const externalWidthMm = milToMm(externalWidthMil);
+                const externalWidthUm = milToUm(externalWidthMil);
+
+                const externalResistance = ((1.7e-6) * traceCm / AeM2) * (1 + 3.9e-3 * ((ambientC + riseC) - 25));
+                const externalVoltage = externalResistance * current;
+                const externalPower = current * current * externalResistance;
+
+                return {
+                    internalWidth: internalWidth,
+                    internalWidthMil: internalWidthMil,
+                    internalWidthMm: internalWidthMm,
+                    internalWidthUm: internalWidthUm,
+                    externalWidth: externalWidth,
+                    externalWidthMil: externalWidthMil,
+                    externalWidthMm: externalWidthMm,
+                    externalWidthUm: externalWidthUm,
+                    internalResistance: internalResistance,
+                    externalResistance: externalResistance,
+                    internalVoltage: internalVoltage,
+                    externalVoltage: externalVoltage,
+                    internalPower: internalPower,
+                    externalPower: externalPower
+                };
+            } catch (error) {
+                console.error('Calculation error:', error);
+                return null;
+            }
+        }
+
+        function formatNumber(num, precision = 11) {
+            if (num === null || num === undefined || isNaN(num)) return 'Error';
+            if (num === 0) return '0';
+
+            // For very small numbers, use scientific notation
+            if (Math.abs(num) < 1e-6) {
+                return num.toExponential(3);
+            }
+
+            // For normal numbers, use fixed precision
+            return num.toFixed(precision);
+        }
+
+        function updateResults() {
+            const current = parseFloat(document.getElementById('current').value) || 0;
+            const ambient = parseFloat(document.getElementById('ambient').value) || 0;
+            const thickness = parseFloat(document.getElementById('thickness').value) || 0;
+            const trace = parseFloat(document.getElementById('trace').value) || 0;
+            const rise = parseFloat(document.getElementById('rise').value) || 0;
+
+            const ambientUnit = document.getElementById('ambientUnit').value;
+            const thicknessUnit = document.getElementById('thicknessUnit').value;
+            const traceUnit = document.getElementById('traceUnit').value;
+            const riseUnit = document.getElementById('riseUnit').value;
+
+            if (current <= 0 || thickness <= 0 || trace <= 0 || rise <= 0) {
+                // Show error state
+                document.getElementById('internalWidth').textContent = 'Please enter valid values';
+                document.getElementById('externalWidth').textContent = 'Please enter valid values';
+                return;
+            }
+
+            const result = calcTraceWidth(current, thickness, rise, ambient, trace, thicknessUnit, riseUnit, ambientUnit, traceUnit);
+
+            if (!result) {
+                document.getElementById('internalWidth').textContent = 'Calculation Error';
+                document.getElementById('externalWidth').textContent = 'Calculation Error';
+                return;
+            }
+
+            // Update internal layer results
+            document.getElementById('internalWidth').innerHTML = `
+                Width: ${formatNumber(result.internalWidthMil)} mil<br>
+                ${formatNumber(result.internalWidthMm)} mm | ${formatNumber(result.internalWidthUm)} µm
+            `;
+            document.getElementById('internalResistance').textContent = formatNumber(result.internalResistance) + ' Ω';
+            document.getElementById('internalVoltage').textContent = formatNumber(result.internalVoltage) + ' V';
+            document.getElementById('internalPower').textContent = formatNumber(result.internalPower) + ' W';
+
+            // Update external layer results
+            document.getElementById('externalWidth').innerHTML = `
+                Width: ${formatNumber(result.externalWidthMil)} mil<br>
+                ${formatNumber(result.externalWidthMm)} mm | ${formatNumber(result.externalWidthUm)} µm
+            `;
+            document.getElementById('externalResistance').textContent = formatNumber(result.externalResistance) + ' Ω';
+            document.getElementById('externalVoltage').textContent = formatNumber(result.externalVoltage) + ' V';
+            document.getElementById('externalPower').textContent = formatNumber(result.externalPower) + ' W';
+
+            // Add pulse animation to results
+            document.querySelectorAll('.result-card').forEach(card => {
+                card.classList.add('pulse');
+                setTimeout(() => card.classList.remove('pulse'), 1000);
+            });
+        }
+
+        // Add event listeners for real-time updates
+        document.addEventListener('DOMContentLoaded', function () {
+            const inputs = document.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                input.addEventListener('input', updateResults);
+                input.addEventListener('change', updateResults);
+            });
+
+            // Initial calculation
+            updateResults();
+        });
+    </script>
+</body>
+
+</html>
