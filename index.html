@@ -1582,7 +1582,7 @@
             }
             // Number of PCBs calculation
             if (results.numPCB === null && numPCBLayersseries !== null && numPCBLayers !== null && numPCBLayersParallel !== null) {
-              results.numPCB = Math.max(1, Math.ceil(numPCBLayersseries / numPCBLayers) * numPCBLayersParallel);
+              results.numPCB = (numPCBLayersseries / numPCBLayers) * numPCBLayersParallel;
               something_calculated_in_this_pass = true;
             }
             // Stackup Height
@@ -1731,7 +1731,7 @@
             }
             // Average trace width calculation
             if (results.avgTraceWidth === null && traceWidthID !== null && results.traceWidthOD !== null) {
-              results.avgTraceWidth = (traceWidthID + results.traceWidthOD) / 2;
+              results.avgTraceWidth = ((( traceWidthID + results.traceWidthOD ) / 2 * results.traceLengthRadial) + (traceGap * traceGap)) / (results.traceLengthRadial + traceGap);
               something_calculated_in_this_pass = true;
             }
             if (!something_calculated_in_this_pass) {

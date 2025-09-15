@@ -992,7 +992,7 @@
               <input type="number" id="efficiency" value="95.05" step="0.01" min="0" max="100">
             </div>
           </div>
-          
+
         </div>
         <div class="output-section">
           <h2 class="section-title">Output Results</h2>
@@ -1582,7 +1582,7 @@
             }
             // Number of PCBs calculation
             if (results.numPCB === null && numPCBLayersseries !== null && numPCBLayers !== null && numPCBLayersParallel !== null) {
-              results.numPCB = Math.max(1, Math.ceil(numPCBLayersseries / numPCBLayers) * numPCBLayersParallel);
+              results.numPCB = (numPCBLayersseries / numPCBLayers) * numPCBLayersParallel;
               something_calculated_in_this_pass = true;
             }
             // Stackup Height
@@ -1731,14 +1731,11 @@
             }
             // Average trace width calculation
             if (results.avgTraceWidth === null && traceWidthID !== null && results.traceWidthOD !== null) {
-              results.avgTraceWidth = (traceWidthID + results.traceWidthOD) / 2;
+              results.avgTraceWidth = (((traceWidthID + results.traceWidthOD) / 2 * results.traceLengthRadial) + (traceGap * traceGap)) / (results.traceLengthRadial + traceGap);
               something_calculated_in_this_pass = true;
             }
-            if (!something_calculated_in_this_pass) {
-              break;
-            }
-          }
-          // Calculate winding resistance and losses after the main loop
+
+             // Calculate winding resistance and losses after the main loop
           const windingResistance = calculateWindingResistance(results, current, pcbLayerOz, numPCBLayersParallel);
           // Loss calculations
           if (results.copperLoss === null && current !== null) {
@@ -1759,6 +1756,11 @@
           if (results.actualEfficiency === null && results.powerIn !== null && results.totalLoss !== null) {
             results.actualEfficiency = results.powerIn > 0 ? ((results.powerIn - results.totalLoss) / results.powerIn) * 100 : 0;
           }
+            if (!something_calculated_in_this_pass) {
+              break;
+            }
+          }
+         
           // Display results
           displayResults(results);
           // Store results globally for PDF generation
@@ -2907,4 +2909,3 @@
 </body>
 
 </html>
-
