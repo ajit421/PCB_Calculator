@@ -2,8 +2,8 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>All-in-One PCB Calculator</title>
   <style>
     /* Global Styles */
@@ -14,7 +14,7 @@
     }
 
     body {
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background-color: #363636;
       color: #f0f0f0;
       margin: 0;
@@ -40,7 +40,7 @@
     header h1 {
       flex: 1;
       text-align: center;
-      margin: 50;
+      margin: 0;
     }
 
     header button {
@@ -62,6 +62,28 @@
 
     #darkModeToggle:hover {
       background-color: #f60676;
+    }
+
+    /* Download Full Report Button */
+    #downloadFullReport {
+      background: linear-gradient(135deg, #3498db, #2c3e50);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #downloadFullReport:hover {
+      background: linear-gradient(135deg, #2980b9, #1a252f);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
 
     /* Tab Navigation Styles */
@@ -152,16 +174,14 @@
       z-index: 2;
     }
 
-    .calculator-header::before {
-      content: "";
+    .calculator-header:before {
+      content: '';
       position: absolute;
       top: -50%;
       left: -50%;
       width: 200%;
       height: 200%;
-      background: radial-gradient(circle,
-          rgba(138, 10, 10, 0.1) 0%,
-          rgba(255, 255, 255, 0) 70%);
+      background: radial-gradient(circle, rgba(138, 10, 10, 0.1) 0%, rgba(255, 255, 255, 0) 70%);
       animation: rotate 20s linear infinite;
       z-index: 1;
     }
@@ -177,7 +197,8 @@
     }
 
     .input-section,
-    .results-section {
+    .results-section,
+    .output-section {
       padding: 25px;
       background: white;
       border-radius: 15px;
@@ -186,12 +207,14 @@
     }
 
     body.dark-mode .input-section,
-    body.dark-mode .results-section {
+    body.dark-mode .results-section,
+    body.dark-mode .output-section {
       background: #444;
     }
 
     .input-section:hover,
-    .results-section:hover {
+    .results-section:hover,
+    .output-section:hover {
       transform: translateY(-5px);
       box-shadow: 0 15px 35px #363636;
     }
@@ -204,6 +227,7 @@
       padding-bottom: 10px;
       display: flex;
       align-items: center;
+      justify-content: space-between;
     }
 
     body.dark-mode .section-title {
@@ -472,7 +496,8 @@
       }
 
       .input-section,
-      .results-section {
+      .results-section,
+      .output-section {
         padding: 20px;
       }
     }
@@ -481,7 +506,7 @@
     .mode-toggle {
       justify-content: center;
       margin: 0;
-      gap: 5;
+      gap: 5px;
       padding-bottom: 5px;
       background: white;
     }
@@ -498,7 +523,6 @@
       cursor: pointer;
       border-radius: 8px;
       transition: all 0.3s;
-      /* font-weight: 600; */
     }
 
     .mode-btn:hover {
@@ -561,19 +585,19 @@
       background: rgba(0, 0, 0, 0.2);
     }
 
-    .area-volume-item>span:first-child {
+    .area-volume-item span:first-child {
       font-weight: bold;
       color: #2c3e50;
       display: block;
       margin-bottom: 8px;
     }
 
-    body.dark-mode .area-volume-item>span:first-child {
+    body.dark-mode .area-volume-item span:first-child {
       color: #f0f0f0;
     }
 
     .area-volume-value {
-      font-family: "Courier New", monospace;
+      font-family: 'Courier New', monospace;
       font-weight: bold;
       color: #2c3e50;
       background: #ecf0f1;
@@ -594,1383 +618,1543 @@
       font-size: 0.9em;
       margin-top: 5px;
     }
+
+    /* ADDED Styles for input validation in Magnet Calculator */
+    .input-field.invalid {
+      border-color: #e74c3c !important;
+    }
+
+    .input-field.valid {
+      border-color: #27ae60 !important;
+    }
+
+    /* ADDED Loading indicator for PDF generation */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      display: none;
+    }
+
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid #3498db;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* ADDED Toast notification for user feedback */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #27ae60;
+      color: white;
+      padding: 15px 25px;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast.error {
+      background: #e74c3c;
+    }
+
+    .result-group {
+      margin-bottom: 25px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 15px;
+      background: #f9f9f9;
+    }
+
+    body.dark-mode .result-group {
+      background: #555;
+      border-color: #666;
+    }
+
+    .result-group-title {
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #3498db;
+    }
+
+    body.dark-mode .result-group-title {
+      color: #f0f0f0;
+    }
+
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    body.dark-mode .result-row {
+      border-color: #666;
+    }
+
+    .result-row:last-child {
+      border-bottom: none;
+    }
+
+    .note {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+      font-size: 0.9rem;
+    }
+
+    body.dark-mode .note {
+      background: #555;
+    }
+
+    .form-row {
+      margin-bottom: 15px;
+    }
+
+    .form-row label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+      color: #333;
+    }
+
+    body.dark-mode .form-row label {
+      color: #ddd;
+    }
+
+    .group-title {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 15px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #3498db;
+    }
+
+    body.dark-mode .group-title {
+      color: #f0f0f0;
+    }
+
+    .error-message {
+      color: #e74c3c;
+      margin-top: 10px;
+      padding: 10px;
+      background-color: rgba(231, 76, 60, 0.1);
+      border-radius: 5px;
+    }
   </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
 <body>
   <header>
     <h1>PCB Calculators</h1>
+    <button id="downloadFullReport">
+      <i class="fas fa-download"></i> Download Full Report
+    </button>
     <button id="darkModeToggle">Dark Mode</button>
   </header>
-
   <nav>
     <button class="tab-link active" data-tab="motor">PCB Motor</button>
     <button class="tab-link" data-tab="trace">Trace Width</button>
     <button class="tab-link" data-tab="magnet">Magnet</button>
   </nav>
-
   <main>
-    <!-- PCB Motor Calculator -->
     <div id="motor" class="tab-content active">
       <div class="calculator-container">
         <div class="calculator-header">
           <h1>AirBuddy Aerospace</h1>
           <p>PCB Motor Calculator</p>
         </div>
-
         <div class="input-section">
           <h2 class="section-title">Input Parameters</h2>
-
           <div class="input-group">
-            <label for="powerOut">Power Out </label>
-            <input type="number" id="powerOut" step="0.01" placeholder="Enter power output" value="1" />
-            <span class="unit">kW</span>
+            <h3 class="group-title">PCB Dimensions</h3>
+            <div class="form-row">
+              <label for="pcbStatorOD">PCB Stator OD (mm)</label>
+              <input type="number" id="pcbStatorOD" value="109.5" step="0.1" min="0">
+            </div>
+            <div class="form-row">
+              <label for="pcbStatorID">PCB Stator ID (mm)</label>
+              <input type="number" id="pcbStatorID" value="65" step="0.1" min="0">
+            </div>
+            <div class="form-row">
+              <label for="pcbBoardThickness">PCB Board Thickness (mm)</label>
+              <input type="number" id="pcbBoardThickness" value="1.6" step="0.1" min="0">
+            </div>
+            <div class="form-row">
+              <label for="traceWidthID">Trace Width ID (mm)</label>
+              <input type="number" id="traceWidthID" value="1.77" step="0.01" min="0">
+            </div>
+            <div class="form-row">
+              <label for="traceGap">Trace Gap (mm)</label>
+              <input type="number" id="traceGap" value="0.5" step="0.01" min="0">
+            </div>
           </div>
-
           <div class="input-group">
-            <label for="torque">Torque </label>
-            <input type="number" id="torque" step="0.01" placeholder="Enter torque" value="2.93" />
-            <span class="unit">Nm</span>
+            <h3 class="group-title">PCB Layers</h3>
+            <div class="form-row">
+              <label for="pcbLayerOz">PCB Layer Oz/Ft²</label>
+              <input type="number" id="pcbLayerOz" value="6" step="0.1" min="0">
+            </div>
+            <div class="form-row">
+              <label for="numPCBLayers">Number of PCB Layers</label>
+              <input type="number" id="numPCBLayers" value="12" step="1" min="0">
+            </div>
+            <div class="form-row">
+              <label for="numPCBLayersseries">Number of PCB Layers in Series</label>
+              <input type="number" id="numPCBLayersseries" value="24" step="1" min="0">
+            </div>
+            <div class="form-row">
+              <label for="numPCBLayersParallel">Number of PCB Layers in Parallel</label>
+              <input type="number" id="numPCBLayersParallel" value="1" step="1" min="0">
+            </div>
           </div>
-
           <div class="input-group">
-            <label for="rpm">RPM </label>
-            <input type="number" id="rpm" step="0.1" placeholder="Enter RPM" value="3314" />
-            <span class="unit">RPM</span>
+            <h3 class="group-title">Rotor Parameters</h3>
+            <div class="form-row">
+              <label for="pmRotorHeight">PM Rotor Axial Height (mm)</label>
+              <input type="number" id="pmRotorHeight" value="6" step="0.1" min="0">
+            </div>
+            <div class="form-row">
+              <label for="airGap">Air Gap (mm)</label>
+              <input type="number" id="airGap" value="0.1" step="0.01" min="0">
+            </div>
+            <div class="form-row">
+              <label for="remanence">Remanence Br (Tesla)</label>
+              <input type="number" id="remanence" value="1.4" step="0.01" min="0">
+            </div>
+            <div class="form-row">
+              <label for="motorParallelConstant">Parallel Stacking Constant</label>
+              <input type="number" id="motorParallelConstant" value="1.5" step="0.01" min="0.1" max="2.0">
+              <span class="unit-note">Typically 1.0-2.0</span>
+            </div>
           </div>
-
           <div class="input-group">
-            <label for="current">Current </label>
-            <input type="number" id="current" step="0.01" placeholder="Enter current" value="15" />
-            <span class="unit">A</span>
-          </div>
-
-          <div class="input-group">
-            <label for="voltage">Voltage </label>
-            <input type="number" id="voltage" step="0.01" placeholder="Enter voltage" value="60" />
-            <span class="unit">V</span>
-          </div>
-
-          <div class="input-group">
-            <label for="efficiency">Efficiency </label>
-            <input type="number" id="efficiency" step="0.01" min="0" max="100" placeholder="Enter efficiency"
-              value="95" />
-            <span class="unit">%</span>
-          </div>
-
-          <div class="input-group">
-            <label for="pcbOD">PCB Stator OD </label>
-            <select id="pcbOD">
-              <option value="">Select or enter custom value</option>
-              <option value="50">50mm</option>
-              <option value="80">80mm</option>
-              <option value="100">100mm</option>
-              <option value="150" selected>150mm</option>
-            </select>
-          </div>
-
-          <div class="input-group">
-            <label for="customPcbOD">Custom PCB Stator OD</label>
-            <input type="number" id="customPcbOD" step="0.1" placeholder="Enter custom OD value" />
-            <span class="unit">mm</span>
+            <h3 class="group-title">Electrical Parameters</h3>
+            <div class="form-row">
+              <label for="current">Current (amps)</label>
+              <input type="number" id="current" value="0.85" step="0.01" min="0">
+            </div>
+            <div class="form-row">
+              <label for="numCells">Number Of Cell in Series</label>
+              <input type="number" id="numCells" value="10" step="1" min="0">
+            </div>
+            <div class="form-row">
+              <label for="cellChargeUnit">Cell Charge Unit (V)</label>
+              <input type="number" id="cellChargeUnit" value="4.2" step="0.1" min="0">
+            </div>
           </div>
         </div>
-
-        <div class="results-section">
-          <h2 class="section-title">Results</h2>
-          <div id="results" class="results-grid">
-            <div class="result-category">
-              <h3>Electrical</h3>
-              <div class="result-item">
-                <span class="result-label">Power In:</span>
-                <span class="result-value" id="powerIn"></span>
-              </div>
-              <div class="result-item">
-                <span class="result-label">Current:</span>
-                <span class="result-value" id="currentResult"></span>
-              </div>
-              <div class="result-item">
-                <span class="result-label">Voltage:</span>
-                <span class="result-value" id="voltageResult"></span>
-              </div>
-              <div class="result-item">
-                <span class="result-label">Efficiency:</span>
-                <span class="result-value" id="efficiencyResult"></span>
-              </div>
-            </div>
-
-            <div class="result-category">
-              <h3>Mechanical</h3>
-              <div class="result-item">
-                <span class="result-label">Power Out:</span>
-                <span class="result-value" id="powerOutResult"></span>
-              </div>
-              <div class="result-item">
-                <span class="result-label">Torque:</span>
-                <span class="result-value" id="torqueResult"></span>
-              </div>
-              <div class="result-item">
-                <span class="result-label">RPM:</span>
-                <span class="result-value" id="rpmResult"></span>
-              </div>
-              <div class="result-item">
-                <span class="result-label">Force:</span>
-                <span class="result-value" id="forceResult"></span>
-              </div>
-            </div>
-
-            <div class="result-category">
-              <h3>Dimensions</h3>
-              <div class="result-item">
-                <span class="result-label">PCB OD:</span>
-                <span class="result-value" id="pcbODResult"></span>
-              </div>
-              <div class="result-item">
-                <span class="result-label">Stack Height:</span>
-                <span class="result-value" id="stackHeight"></span>
-              </div>
-              <div class="result-item">
-                <span class="result-label">Total Weight:</span>
-                <span class="result-value" id="weightResult"></span>
-              </div>
-            </div>
-
-            <div class="result-category">
-              <h3>Performance</h3>
-              <div class="result-item">
-                <span class="result-label">Power Density:</span>
-                <span class="result-value" id="powerDensity"></span>
-              </div>
-              <div class="result-item">
-                <span class="result-label">kV Rating:</span>
-                <span class="result-value" id="kvRating"></span>
-              </div>
-              <div class="result-item">
-                <span class="result-label">Estimated Cost:</span>
-                <span class="result-value" id="costResult"></span>
-              </div>
-            </div>
-
-            <div class="result-highlight">
-              <div>
-                <h1>Contact Us</h1>
-              </div>
-              <div>
-                <p>Need help with PCB Calculator?</p>
-              </div>
-              <div>📧 bibhuti@airbuddy.in</div>
-              <div>📞 +917079142368</div>
-            </div>
+        <div class="output-section">
+          <h2 class="section-title">Output Results</h2>
+          <div id="resultsContainer">
+            <p style="text-align: center; color: #7f8c8d; padding: 30px 0;">Enter parameters to see results
+            </p>
           </div>
         </div>
       </div>
+      <div class="result-highlight">
+        <div>
+          <h1>Contact Us</h1>
+        </div>
+        <div>
+          <p>Need help with PCB Calculator?</p>
+        </div>
+        <div>bibhuti@airbuddy.in</div>
+        <div>+91 7079142368</div>
+      </div>
     </div>
 
-    <!-- Trace Width Calculator -->
     <div id="trace" class="tab-content">
       <div class="calculator-container">
         <div class="calculator-header">
           <h1>PCB Trace Width Calculator</h1>
-          <p>
-            Real-Time calculator for PCB trace width and temperature rise.
-          </p>
+          <p>Real-Time calculator for PCB trace width and temperature rise.</p>
         </div>
-
         <div class="input-section">
+          <h2 class="section-title">Input Parameters</h2>
           <div class="mode-toggle">
-            <button class="mode-btn active" data-mode="width">
-              Calculate Width
-            </button>
-            <button class="mode-btn" data-mode="rise">
-              Calculate Temp Rise
-            </button>
-            <button class="mode-btn" data-mode="parameters">
-              Trace Parameters
-            </button>
+            <button class="mode-btn active" data-mode="width">Calculate Width</button>
+            <button class="mode-btn" data-mode="rise">Calculate Temp Rise</button>
+            <button class="mode-btn" data-mode="parameters">Trace Parameters</button>
           </div>
           <div class="input-group">
-            <label for="trace_current">Current (A)</label>
+            <label for="tracecurrent">Current (A)</label>
             <div class="input-row">
-              <input type="number" id="trace_current" step="0.1" value="15" min="0" />
+              <input type="number" id="tracecurrent" step="0.1" value="0.85" min="0">
             </div>
           </div>
-
           <div class="input-group">
-            <label for="trace_ambient">Ambient Temperature</label>
+            <label for="traceambient">Ambient Temperature</label>
             <div class="input-row">
-              <input type="number" id="trace_ambient" step="0.1" value="25" />
-              <select id="trace_ambientUnit">
-                <option value="°C">°C</option>
-                <option value="°F">°F</option>
+              <input type="number" id="traceambient" step="0.1" value="30">
+              <select id="traceambientUnit">
+                <option value="C">°C</option>
+                <option value="F">°F</option>
               </select>
             </div>
           </div>
-
           <div class="input-group rise-input">
-            <label for="trace_rise">Temperature Rise</label>
+            <label for="tracerise">Temperature Rise</label>
             <div class="input-row">
-              <input type="number" id="trace_rise" step="0.1" value="25" min="0" />
-              <select id="trace_riseUnit">
-                <option value="°C">°C</option>
-                <option value="°F">°F</option>
+              <input type="number" id="tracerise" step="0.1" value="25" min="0">
+              <select id="traceriseUnit">
+                <option value="C">°C</option>
+                <option value="F">°F</option>
               </select>
             </div>
           </div>
-
           <div class="input-group parameters-rise-input hidden">
-            <label for="trace_parameters_rise">Temperature Rise</label>
+            <label for="traceparametersrise">Temperature Rise</label>
             <div class="input-row">
-              <input type="number" id="trace_parameters_rise" step="0.1" value="25" min="0" />
-              <select id="trace_parameters_riseUnit">
-                <option value="°C">°C</option>
-                <option value="°F">°F</option>
+              <input type="number" id="traceparametersrise" step="0.1" value="25" min="0">
+              <select id="traceparametersriseUnit">
+                <option value="C">°C</option>
+                <option value="F">°F</option>
               </select>
             </div>
           </div>
-
           <div class="input-group">
-            <label for="trace_length_input">Trace Length ( L )</label>
+            <label for="tracelengthinput">Trace Length</label>
             <div class="input-row">
-              <input type="number" id="trace_length_input" step="0.1" value="10" />
-              <select id="trace_traceUnit">
-                <option value="in">in</option>
-                <option value="ft">ft</option>
-                <option value="mil">mil</option>
+              <input type="number" id="tracelengthinput" step="0.1" value="12">
+              <select id="tracetraceUnit">
                 <option value="mm">mm</option>
-                <option value="µm">µm</option>
-                <option value="cm">cm</option>
-                <option value="m">m</option>
               </select>
             </div>
           </div>
-
           <div class="input-group thickness-input">
-            <label for="trace_thickness">Copper Thickness ( H ) </label>
+            <label for="tracethickness">Copper Thickness (H)</label>
             <div class="input-row">
-              <input type="number" id="trace_thickness" step="0.1" value="1" />
-              <select id="trace_thicknessUnit">
-                <option value="oz/ft²">oz/ft²</option>
-                <option value="mil">mil</option>
-                <option value="mm">mm</option>
-                <option value="µm">µm</option>
+              <input type="number" id="tracethickness" step="0.1" value="6">
+              <select id="tracethicknessUnit">
+                <option value="ozft">oz/ft²</option>
               </select>
             </div>
           </div>
-
           <div class="input-group width-input hidden">
-            <label>Trace Width ( W )</label>
+            <label>Trace Width (W)</label>
             <div class="width-inputs">
               <div class="width-input-row">
-                <label for="trace_width_internal">Internal:</label>
-                <input type="number" id="trace_width_internal" step="0.1" value="18" min="0" />
-                <select id="trace_widthUnit_internal">
-                  <option value="mil">mil</option>
+                <label for="tracewidthinternal">Internal</label>
+                <input type="number" id="tracewidthinternal" step="0.1" value="2.3627" min="0">
+                <select id="tracewidthUnitinternal">
                   <option value="mm" selected>mm</option>
-                  <option value="µm">µm</option>
                 </select>
               </div>
               <div class="width-input-row">
-                <label for="trace_width_external">External:</label>
-                <input type="number" id="trace_width_external" step="0.1" value="18" min="0" />
-                <select id="trace_widthUnit_external">
-                  <option value="mil">mil</option>
+                <label for="tracewidthexternal">External</label>
+                <input type="number" id="tracewidthexternal" step="0.1" value="2.3627" min="0">
+                <select id="tracewidthUnitexternal">
                   <option value="mm" selected>mm</option>
-                  <option value="µm">µm</option>
                 </select>
               </div>
             </div>
           </div>
         </div>
-
         <div class="results-section">
           <h2 class="section-title">Calculation Results</h2>
-
           <div class="width-results">
             <div class="result-category internal">
               <h3>Internal Layers</h3>
-              <div class="width-display" id="internalWidth">
-                Width: Loading...
+              <div class="width-display" id="internalWidth">Width: Loading...</div>
+              <div class="result-item">
+                <span class="result-label">Resistance</span>
+                <span class="result-value" id="internalResistance">-</span>
               </div>
               <div class="result-item">
-                <span class="result-label">Resistance:</span>
-                <span class="result-value" id="internalResistance">- Ω</span>
-              </div>
-              <div class="result-item">
-                <span class="result-label">Voltage Drop:</span>
+                <span class="result-label">Voltage Drop</span>
                 <span class="result-value" id="internalVoltage">- V</span>
               </div>
               <div class="result-item">
-                <span class="result-label">Power Loss:</span>
+                <span class="result-label">Power Loss</span>
                 <span class="result-value" id="internalPower">- W</span>
               </div>
             </div>
             <div class="result-category external">
               <h3>External Layers in Air</h3>
-              <div class="width-display" id="externalWidth">
-                Width: Loading...
+              <div class="width-display" id="externalWidth">Width: Loading...</div>
+              <div class="result-item">
+                <span class="result-label">Resistance</span>
+                <span class="result-value" id="externalResistance">-</span>
               </div>
               <div class="result-item">
-                <span class="result-label">Resistance:</span>
-                <span class="result-value" id="externalResistance">- Ω</span>
-              </div>
-              <div class="result-item">
-                <span class="result-label">Voltage Drop:</span>
+                <span class="result-label">Voltage Drop</span>
                 <span class="result-value" id="externalVoltage">- V</span>
               </div>
               <div class="result-item">
-                <span class="result-label">Power Loss:</span>
-                <span class="result-value" id="externalPower">- W</span>
+                <span class="result-label">Power Loss</span>
+                <span class="result-value" id="externalPower">32.4765 W</span>
               </div>
             </div>
           </div>
-
           <div class="rise-results hidden">
             <div class="result-category internal">
               <h3>Internal Layers</h3>
-              <div class="width-display" id="internalRise">
-                Temperature Rise: Loading...
+              <div class="width-display" id="internalRise">Rise: Loading...</div>
+              <div class="result-item">
+                <span class="result-label">Resistance</span>
+                <span class="result-value" id="internalRiseResistance">-</span>
               </div>
               <div class="result-item">
-                <span class="result-label">Resistance:</span>
-                <span class="result-value" id="internalRiseResistance">- Ω</span>
-              </div>
-              <div class="result-item">
-                <span class="result-label">Voltage Drop:</span>
+                <span class="result-label">Voltage Drop</span>
                 <span class="result-value" id="internalRiseVoltage">- V</span>
               </div>
               <div class="result-item">
-                <span class="result-label">Power Loss:</span>
+                <span class="result-label">Power Loss</span>
                 <span class="result-value" id="internalRisePower">- W</span>
               </div>
             </div>
             <div class="result-category external">
               <h3>External Layers in Air</h3>
-              <div class="width-display" id="externalRise">
-                Temperature Rise: Loading...
+              <div class="width-display" id="externalRise">Rise: Loading...</div>
+              <div class="result-item">
+                <span class="result-label">Resistance</span>
+                <span class="result-value" id="externalRiseResistance">-</span>
               </div>
               <div class="result-item">
-                <span class="result-label">Resistance:</span>
-                <span class="result-value" id="externalRiseResistance">- Ω</span>
-              </div>
-              <div class="result-item">
-                <span class="result-label">Voltage Drop:</span>
+                <span class="result-label">Voltage Drop</span>
                 <span class="result-value" id="externalRiseVoltage">- V</span>
               </div>
               <div class="result-item">
-                <span class="result-label">Power Loss:</span>
+                <span class="result-label">Power Loss</span>
                 <span class="result-value" id="externalRisePower">- W</span>
               </div>
             </div>
           </div>
-
           <div class="parameters-results hidden">
             <div class="result-category internal">
               <h3>Internal Layers</h3>
               <div class="area-volume-display">
                 <div class="area-volume-item">
                   <span>Cross-sectional Area</span>
-                  <span class="area-volume-value" id="internalArea_mm2">- mm²</span>
-                  <span class="area-volume-value" id="internalArea_cm2">- cm²</span>
-                  <span class="area-volume-value" id="internalArea_m2">- m²</span>
+                  <span class="area-volume-value" id="internalAreamm2">- mm²</span>
+                  <span class="area-volume-value" id="internalAreacm2">- cm²</span>
+                  <span class="area-volume-value" id="internalAream2">- m²</span>
                 </div>
                 <div class="area-volume-item">
                   <span>Volume</span>
-                  <span class="area-volume-value" id="internalVolume_mm3">- mm³</span>
-                  <span class="area-volume-value" id="internalVolume_cm3">- cm³</span>
-                  <span class="area-volume-value" id="internalVolume_m3">- m³</span>
+                  <span class="area-volume-value" id="internalVolumemm3">- mm³</span>
+                  <span class="area-volume-value" id="internalVolumecm3">- cm³</span>
+                  <span class="area-volume-value" id="internalVolumem3">- m³</span>
                 </div>
               </div>
               <div class="result-item">
-                <span class="result-label">Resistance:</span>
-                <span class="result-value" id="internalParamResistance">- Ω</span>
+                <span class="result-label">Resistance</span>
+                <span class="result-value" id="internalParamResistance">-</span>
               </div>
               <div class="result-item">
-                <span class="result-label">Voltage Drop:</span>
+                <span class="result-label">Voltage Drop</span>
                 <span class="result-value" id="internalParamVoltage">- V</span>
               </div>
               <div class="result-item">
-                <span class="result-label">Power Loss:</span>
+                <span class="result-label">Power Loss</span>
                 <span class="result-value" id="internalParamPower">- W</span>
               </div>
             </div>
-
             <div class="result-category external">
               <h3>External Layers in Air</h3>
               <div class="area-volume-display">
                 <div class="area-volume-item">
                   <span>Cross-sectional Area</span>
-                  <span class="area-volume-value" id="externalArea_mm2">- mm²</span>
-                  <span class="area-volume-value" id="externalArea_cm2">- cm²</span>
-                  <span class="area-volume-value" id="externalArea_m2">- m²</span>
+                  <span class="area-volume-value" id="externalAreamm2">- mm²</span>
+                  <span class="area-volume-value" id="externalAreacm2">- cm²</span>
+                  <span class="area-volume-value" id="externalAream2">- m²</span>
                 </div>
                 <div class="area-volume-item">
                   <span>Volume</span>
-                  <span class="area-volume-value" id="externalVolume_mm3">- mm³</span>
-                  <span class="area-volume-value" id="externalVolume_cm3">- cm³</span>
-                  <span class="area-volume-value" id="externalVolume_m3">- m³</span>
+                  <span class="area-volume-value" id="externalVolumemm3">- mm³</span>
+                  <span class="area-volume-value" id="externalVolumecm3">- cm³</span>
+                  <span class="area-volume-value" id="externalVolumem3">- m³</span>
                 </div>
               </div>
               <div class="result-item">
-                <span class="result-label">Resistance:</span>
-                <span class="result-value" id="externalParamResistance">- Ω</span>
+                <span class="result-label">Resistance</span>
+                <span class="result-value" id="externalParamResistance">-</span>
               </div>
               <div class="result-item">
-                <span class="result-label">Voltage Drop:</span>
+                <span class="result-label">Voltage Drop</span>
                 <span class="result-value" id="externalParamVoltage">- V</span>
               </div>
               <div class="result-item">
-                <span class="result-label">Power Loss:</span>
+                <span class="result-label">Power Loss</span>
                 <span class="result-value" id="externalParamPower">- W</span>
               </div>
             </div>
           </div>
         </div>
       </div>
+      <div class="result-highlight">
+        <div>
+          <h1>Contact Us</h1>
+        </div>
+        <div>
+          <p>Need help with PCB Calculator?</p>
+        </div>
+        <div>bibhuti@airbuddy.in</div>
+        <div>+91 7079142368</div>
+      </div>
     </div>
 
-    <!-- Magnet Calculator -->
     <div id="magnet" class="tab-content">
       <div class="calculator-container">
         <div class="calculator-header">
           <h1>PCB Magnet Calculator</h1>
           <p>Calculate Surface magnetic Value in real-time</p>
         </div>
-
         <div class="input-section">
-          <div class="magnet-tabs">
-            <button class="magnet-tab-btn active" data-tab="block" type="button" aria-pressed="true">
-              Block Magnet
-            </button>
-            <button class="magnet-tab-btn" data-tab="ring" type="button" aria-pressed="false">
-              Ring Magnet
-            </button>
+          <h2 class="section-title">Input Parameters</h2>
+          <div class="magnet-tabs" role="tablist">
+            <button class="magnet-tab-btn active" data-tab="block" type="button" aria-pressed="true" role="tab"
+              aria-selected="true">Block Magnet</button>
+            <button class="magnet-tab-btn" data-tab="ring" type="button" aria-pressed="false" role="tab"
+              aria-selected="false">Ring Magnet</button>
           </div>
-
           <div id="block" class="calculator-section active">
             <div class="input-grid">
               <div class="input-group">
-                <label class="input-label">Remanence (Br)</label>
-                <input type="number" class="input-field" id="block_remanence" step="0.01" min="0" value="1.47" />
+                <label class="input-label">Remanence Br</label>
+                <input type="number" class="input-field" id="blockremanence" step="0.01" min="0" value="1.4">
                 <span class="unit">T</span>
               </div>
               <div class="input-group">
-                <label class="input-label">Hight (H)</label>
-                <input type="number" class="input-field" id="block_height" step="0.1" min="0" value="3" />
+                <label class="input-label">Height H</label>
+                <input type="number" class="input-field" id="blockheight" step="0.1" min="0" value="6">
                 <span class="unit">mm</span>
               </div>
               <div class="input-group">
-                <label class="input-label">Length (L)</label>
-                <input type="number" class="input-field" id="block_length" step="0.1" min="0" value="11.2" />
+                <label class="input-label">Length L</label>
+                <input type="number" class="input-field" id="blocklength" step="0.1" min="0" value="19.567">
                 <span class="unit">mm</span>
               </div>
               <div class="input-group">
-                <label class="input-label">Width OD (W)</label>
-                <input type="number" class="input-field" id="block_width_od" step="0.1" min="0" value="10" />
+                <label class="input-label">Parallel Stacking Constant</label>
+                <input type="number" class="input-field" id="blockParallelConstant" step="0.01" min="0.1" max="2.0"
+                  value="1.5">
+                <span class="unit"></span>
+              </div>
+              <div class="input-group">
+                <label class="input-label">Width OD W</label>
+                <input type="number" class="input-field" id="blockwidthod" step="0.1" min="0" value="3.205">
                 <span class="unit">mm</span>
               </div>
               <div class="input-group">
-                <label class="input-label">Width ID (W)</label>
-                <input type="number" class="input-field" id="block_width_id" step="0.1" min="0" value="5.15" />
+                <label class="input-label">Width ID W</label>
+                <input type="number" class="input-field" id="blockwidthid" step="0.1" min="0" value="1.8687">
                 <span class="unit">mm</span>
               </div>
             </div>
           </div>
-
           <div id="ring" class="calculator-section">
             <div class="input-grid">
               <div class="input-group">
-                <label class="input-label">Remanence (Br)</label>
-                <input type="number" class="input-field" id="ring_remanence" step="0.01" min="0" value="1.47" />
+                <label class="input-label">Remanence Br</label>
+                <input type="number" class="input-field" id="ringremanence" step="0.01" min="0" value="1.47">
                 <span class="unit">T</span>
               </div>
               <div class="input-group">
-                <label class="input-label">Hight (H)</label>
-                <input type="number" class="input-field" id="ring_height" step="0.1" min="0" value="20" />
+                <label class="input-label">Height H</label>
+                <input type="number" class="input-field" id="ringheight" step="0.1" min="0" value="20">
                 <span class="unit">mm</span>
               </div>
               <div class="input-group">
-                <label class="input-label">Outer Diameter (OD)</label>
-                <input type="number" class="input-field" id="ring_od" step="0.1" min="0" value="40" />
+                <label class="input-label">Outer Diameter OD</label>
+                <input type="number" class="input-field" id="ringod" step="0.1" min="0" value="40">
                 <span class="unit">mm</span>
               </div>
               <div class="input-group">
-                <label class="input-label">Inner Diameter (ID)</label>
-                <input type="number" class="input-field" id="ring_id" step="0.1" min="0" value="20" />
+                <label class="input-label">Inner Diameter ID</label>
+                <input type="number" class="input-field" id="ringid" step="0.1" min="0" value="20">
                 <span class="unit">mm</span>
               </div>
             </div>
           </div>
         </div>
-
         <div class="results-section">
           <h2 class="section-title">Results</h2>
           <div class="result-category">
             <h3>Surface Magnetic Value</h3>
             <div class="result-item">
-              <span class="result-label">Result:</span>
-              <span class="result-value" id="result_value">0.00000</span>
+              <span class="result-label">Result</span>
+              <span class="result-value" id="resultvalue">0.934500</span>
             </div>
             <div class="result-item">
-              <span class="result-label">Unit:</span>
+              <span class="result-label">Unit</span>
               <span class="result-value">Tesla (T)</span>
             </div>
           </div>
-          <div class="error-message" id="error">Error in calculation</div>
+          <div class="error-message" id="error" style="display: none;">Error in calculation</div>
         </div>
+      </div>
+      <div class="result-highlight">
+        <div>
+          <h1>Contact Us</h1>
+        </div>
+        <div>
+          <p>Need help with PCB Calculator?</p>
+        </div>
+        <div>bibhuti@airbuddy.in</div>
+        <div>+91 7079142368</div>
       </div>
     </div>
   </main>
 
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+  </div>
+  <div class="toast" id="toastNotification"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
   <script>
     // --- Dark Mode Toggle ---
-    const darkModeToggle = document.getElementById("darkModeToggle");
+    const darkModeToggle = document.getElementById('darkModeToggle');
     const body = document.body;
-
-    darkModeToggle.addEventListener("click", () => {
-      body.classList.toggle("dark-mode");
-      if (body.classList.contains("dark-mode")) {
-        darkModeToggle.textContent = "Light Mode";
+    darkModeToggle.addEventListener('click', () => {
+      body.classList.toggle('dark-mode');
+      if (body.classList.contains('dark-mode')) {
+        darkModeToggle.textContent = 'Light Mode';
       } else {
-        darkModeToggle.textContent = "Dark Mode";
+        darkModeToggle.textContent = 'Dark Mode';
       }
     });
 
     // --- Tab Switching Logic ---
-    const mainTabLinks = document.querySelectorAll(".tab-link");
-    const mainTabContents = document.querySelectorAll(".tab-content");
-
-    mainTabLinks.forEach((link) => {
-      link.addEventListener("click", () => {
-        const tabId = link.getAttribute("data-tab");
-
-        mainTabLinks.forEach((item) => item.classList.remove("active"));
-        mainTabContents.forEach((item) => item.classList.remove("active"));
-
-        link.classList.add("active");
-        document.getElementById(tabId).classList.add("active");
+    const mainTabLinks = document.querySelectorAll('.tab-link');
+    const mainTabContents = document.querySelectorAll('.tab-content');
+    mainTabLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        const tabId = link.getAttribute('data-tab');
+        mainTabLinks.forEach(item => item.classList.remove('active'));
+        mainTabContents.forEach(item => item.classList.remove('active'));
+        link.classList.add('active');
+        document.getElementById(tabId).classList.add('active');
       });
     });
 
+    // === GLOBAL SYNC SYSTEM ===
+    let isSyncing = false;
+
+    function syncGlobal() {
+      if (isSyncing) return;
+      isSyncing = true;
+      try {
+        // --- Motor to Trace Syncing ---
+        if (window.motorResults) {
+          const mr = window.motorResults;
+          const motorCurrent = document.getElementById('current').value;
+          const traceCurrent = document.getElementById('tracecurrent');
+          if (traceCurrent && traceCurrent.value !== motorCurrent) {
+            traceCurrent.value = motorCurrent;
+            traceCurrent.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+
+          if (mr.reqCopperThickness !== null && isFinite(mr.reqCopperThickness)) {
+            const el = document.getElementById('tracethickness');
+            if (el && parseFloat(el.value) !== mr.reqCopperThickness) {
+              el.value = mr.reqCopperThickness.toFixed(4);
+              el.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+          }
+          if (mr.twoPhase !== null && isFinite(mr.twoPhase)) {
+            const el = document.getElementById('tracelengthinput');
+            const lenMm = mr.twoPhase * 1000;
+            if (el && parseFloat(el.value) !== lenMm) {
+              el.value = lenMm.toFixed(4);
+              document.getElementById('tracetraceUnit').value = 'mm';
+              el.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+          }
+        }
+
+        // --- Motor to Magnet Syncing ---
+        if (window.motorResults) {
+          const mr = window.motorResults;
+
+          // Sync Dimensions
+          if (mr.widthOD !== null && isFinite(mr.widthOD)) {
+            const el = document.getElementById('blockwidthod');
+            if (el && parseFloat(el.value) !== mr.widthOD) {
+              el.value = mr.widthOD.toFixed(4);
+              el.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+          }
+          if (mr.widthID !== null && isFinite(mr.widthID)) {
+            const el = document.getElementById('blockwidthid');
+            if (el && parseFloat(el.value) !== mr.widthID) {
+              el.value = mr.widthID.toFixed(4);
+              el.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+          }
+          if (mr.traceLengthRadial !== null && isFinite(mr.traceLengthRadial)) {
+            const el = document.getElementById('blocklength');
+            if (el && parseFloat(el.value) !== mr.traceLengthRadial) {
+              el.value = mr.traceLengthRadial.toFixed(4);
+              el.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+          }
+          //  Remanence Br
+          if (mr.remanence !== null && isFinite(mr.remanence)) {
+            const el = document.getElementById('blockremanence');
+            if (el && parseFloat(el.value) !== mr.remanence) {
+              el.value = mr.remanence.toFixed(4);
+              el.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+          }
+          // Height H
+          if (mr.pmRotorHeight !== null && isFinite(mr.pmRotorHeight)) {
+            const el = document.getElementById('blockheight');
+            if (el && parseFloat(el.value) !== mr.pmRotorHeight) {
+              el.value = mr.pmRotorHeight.toFixed(4);
+              el.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+          }
+          // Parallel Stacking Constant
+          if (mr.parallelConstant !== null && isFinite(mr.parallelConstant)) {
+            const el = document.getElementById('blockParallelConstant');
+            if (el && parseFloat(el.value) !== mr.parallelConstant) {
+              el.value = mr.parallelConstant.toFixed(4);
+              el.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+          }
+
+
+          // Sync Parameters
+          const motorPsc = document.getElementById('motorParallelConstant').value;
+          const magnetPsc = document.getElementById('blockParallelConstant');
+          if (magnetPsc && motorPsc !== undefined && magnetPsc.value !== motorPsc) {
+            magnetPsc.value = motorPsc;
+            magnetPsc.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+
+          const motorHeight = document.getElementById('pmRotorHeight').value;
+          const magnetHeight = document.getElementById('blockheight');
+          if (magnetHeight && motorHeight !== undefined && magnetHeight.value !== motorHeight) {
+            magnetHeight.value = motorHeight;
+            magnetHeight.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+
+          // *** START: CORRECTED SYNC LOGIC ***
+          // Syncs the INPUT remanence from the motor to the INPUT remanence of the magnet.
+          // This ensures both calculators use the same base values and get the same result.
+          const motorRemanence = document.getElementById('remanence')?.value;
+          const magnetRemanenceEl = document.getElementById('blockremanence');
+          if (magnetRemanenceEl && motorRemanence !== undefined && magnetRemanenceEl.value !== motorRemanence) {
+            magnetRemanenceEl.value = motorRemanence;
+            magnetRemanenceEl.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+          // *** END: CORRECTED SYNC LOGIC ***
+        }
+
+
+        // --- Trace to Motor Syncing ---
+        if (window.traceResults && window.traceInputs) {
+          let powerLossW = null;
+          const tr = window.traceResults;
+          const mode = window.traceInputs.isWidthMode ? 'width' :
+            window.traceInputs.isRiseMode ? 'rise' : 'parameters';
+          if (mode === 'width' || mode === 'rise') {
+            powerLossW = tr.internal?.powerLoss;
+          } else if (mode === 'parameters') {
+            powerLossW = tr.internal?.powerLoss;
+          }
+          if (powerLossW !== null && isFinite(powerLossW)) {
+            window.syncedCopperLossFromTrace = powerLossW; // in WATTS
+            if (typeof calculateMotorParameters === 'function') {
+              calculateMotorParameters();
+            }
+          }
+        }
+        if (window.traceResults) {
+          const tr = window.traceResults;
+          const mode = window.traceInputs?.isWidthMode ? 'width' :
+            window.traceInputs?.isRiseMode ? 'rise' : 'parameters';
+          if (mode === 'width' && tr.external && tr.internal) {
+            const internalWidthMm = milToMm(tr.internal.width);
+            const externalWidthMm = milToMm(tr.external.width);
+            const intInput = document.getElementById('tracewidthinternal');
+            const extInput = document.getElementById('tracewidthexternal');
+            if (intInput && parseFloat(intInput.value) !== internalWidthMm) {
+              intInput.value = internalWidthMm.toFixed(4);
+            }
+            if (extInput && parseFloat(extInput.value) !== externalWidthMm) {
+              extInput.value = externalWidthMm.toFixed(4);
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('Sync error:', e);
+      } finally {
+        isSyncing = false;
+      }
+    }
+
+    // --- Utility for mil to mm (needed for trace sync) ---
+    const MM_PER_MIL = 0.0254;
+    const milToMm = mil => mil * MM_PER_MIL;
+
     // --- PCB Motor Calculator Script ---
-    (function () {
-      const motorTab = document.querySelector("#motor");
-      const inputs = motorTab.querySelectorAll("input, select");
-
-      inputs.forEach((input) => {
-        input.addEventListener("input", updateCalculations);
-        input.addEventListener("change", updateCalculations);
-      });
-
-      // Add event listener for PCB OD selection
-      document.getElementById("pcbOD").addEventListener("change", function () {
-        const customContainer = document.getElementById("customPcbODContainer");
-        if (this.value === "custom") {
-          customContainer.style.display = "block";
-        } else {
-          customContainer.style.display = "none";
+    document.addEventListener('DOMContentLoaded', function () {
+      function getSafeNumber(id, defaultValue) {
+        const element = document.getElementById(id);
+        if (!element) return defaultValue;
+        const value = parseFloat(element.value);
+        if (isNaN(value) || value < 0) {
+          element.value = defaultValue;
+          return defaultValue;
         }
-        updateCalculations();
-      });
-
-      const DEFAULT_AIR_GAP_MM = 0.1;
-      const DEFAULT_NUM_PHASE = 3;
-      const DEFAULT_PCB_THICKNESS_MM = 1.6;
-      const DEFAULT_PM_ROTOR_THICKNESS_MM = 3.0;
-      const DEFAULT_ONE_PCB_OZ_FT2 = 40;
-      const DEFAULT_MAGNET_STRENGTH_T = 0.5;
-      const DEFAULT_CELL_UNIT_CHARGE_V = 4.2;
-      const DEFAULT_TRACE_GAP_MM = 0.225;
-      const DEFAULT_TRACE_WIDTH_CURVED_LINE = 0.225;
-      const DEFAULT_REMANENCE_BR_TESLA = 1.47;
-      const DEFAULT_PARALLEL_STACKING_CONSTANT = 1.5;
-
-      const PCB_OD_PARAMETERS = {
-        50: {
-          pcb_stator_id_mm: 8,
-          trace_width_id_mm: 3,
-          num_pcb_in_series: 15,
-          layer_parallel: 2,
-          cost_factor_pcb: 80,
-          cost_factor_magnets: 80,
-          miscellaneous_cost: 500,
-          pcb_stator_od_mm: 50,
-          weight_factor: 5 + 7,
-        },
-        80: {
-          pcb_stator_id_mm: 40,
-          trace_width_id_mm: 2.5,
-          num_pcb_in_series: 4,
-          layer_parallel: 1,
-          cost_factor_pcb: 100,
-          cost_factor_magnets: 100,
-          miscellaneous_cost: 800,
-          pcb_stator_od_mm: 80,
-          weight_factor: 7 + 9,
-        },
-        100: {
-          pcb_stator_id_mm: 49,
-          trace_width_id_mm: 4.9,
-          num_pcb_in_series: 5,
-          layer_parallel: 6,
-          cost_factor_pcb: 130,
-          cost_factor_magnets: 130,
-          miscellaneous_cost: 1000,
-          pcb_stator_od_mm: 100,
-          weight_factor: 8 + 10,
-        },
-        150: {
-          pcb_stator_id_mm: 100,
-          trace_width_id_mm: 5.3,
-          num_pcb_in_series: 7,
-          layer_parallel: 10,
-          cost_factor_pcb: 200,
-          cost_factor_magnets: 200,
-          miscellaneous_cost: 1500,
-          pcb_stator_od_mm: 150,
-          weight_factor: 11 + 12,
-        },
-      };
-
-      function fmt(value, unit = "", decimals = 5) {
-        if (value === null || value === undefined || isNaN(value)) {
-          return "N/A";
-        }
-        if (Math.abs(value - Math.round(value)) < 1e-9) {
-          return `${Math.round(value)}${unit}`;
-        }
-        return `${value.toFixed(decimals)}${unit}`;
+        return value;
       }
 
-      function calculate_winding_resistance(results) {
-        const requiredKeys = [
-          "conductor_length_2phase_m",
-          "trace_width_id_mm",
-          "layer_parallel",
-        ];
-
-        if (
-          !requiredKeys.every(
-            (key) => results[key] !== null && !isNaN(results[key])
-          )
-        ) {
-          return 0.2;
-        }
-
+      function calculateWindingResistance(results, current, pcbLayerOz, numPCBLayersParallel) {
         try {
-          const resistivity = 1.68e-8;
-          const copperThickness = DEFAULT_ONE_PCB_OZ_FT2 * 34.8e-6;
-
-          const traceWidthM = results.trace_width_id_mm * 1e-3;
-          const crossSection = traceWidthM * copperThickness;
-
-          if (crossSection === 0) return 0.2;
-
-          const totalResistance =
-            (resistivity * results.conductor_length_2phase_m) / crossSection;
-          const parallelResistance = totalResistance / results.layer_parallel;
-
-          return Math.max(parallelResistance, 0.001);
+          const copperResistivity = 1.68e-8;
+          const thicknessPerOz = 3.48e-5;
+          const copperThickness = pcbLayerOz * thicknessPerOz;
+          if (!results.avgTraceWidth || !results.conductorLengthAll3Phase) return 0.1;
+          const avgTraceWidthM = results.avgTraceWidth / 1000;
+          const crossSectionArea = avgTraceWidthM * copperThickness * numPCBLayersParallel;
+          const totalConductorLengthM = results.conductorLengthAll3Phase;
+          if (crossSectionArea <= 0 || totalConductorLengthM <= 0) return 0.1;
+          return copperResistivity * totalConductorLengthM / crossSectionArea;
         } catch (e) {
-          console.error("Error in winding resistance calculation:", e);
-          return 0.2;
+          return 0.1;
         }
       }
 
-      function updateCalculations() {
-        const results = {
-          power_out_kw:
-            parseFloat(motorTab.querySelector("#powerOut").value) || null,
-          torque_nm:
-            parseFloat(motorTab.querySelector("#torque").value) || null,
-          rpm: parseFloat(motorTab.querySelector("#rpm").value) || null,
-          current_a:
-            parseFloat(motorTab.querySelector("#current").value) || null,
-          voltage_v:
-            parseFloat(motorTab.querySelector("#voltage").value) || null,
-          efficiency_percent:
-            parseFloat(motorTab.querySelector("#efficiency").value) || null,
-          pcb_stator_od_mm: null,
-          power_in_kw: null,
-          force_n: null,
-          weight_g: null,
-          power_density_kw_kg: null,
-          kv_rating: null,
-          cost_inr: null,
-          conductor_length_2phase_m: null,
-          total_pcb: null,
-          num_coils_per_phase: null,
-          pcb_stator_id_mm: null,
-          trace_width_id_mm: null,
-          number_of_lines: null,
-          num_lines_per_phase: null,
-          num_lines_180: null,
-          coil_per_phase_180: null,
-          trace_length_radial_mm: null,
-          trace_radius_id_mm: null,
-          trace_radius_od_mm: null,
-          trace_od_circumference_mm: null,
-          current_conducting_radial_mm: null,
-          trace_id_circumference_mm: null,
-          trace_thickness_od_mm: null,
-          id_circumference_mm: null,
-          non_magnet_area_mm: null,
-          num_stator_coils: null,
-          magnet_poles: null,
-          average_trace_width_mm: null,
-          total_conductor_length_m: null,
-          on_conductor_length_m: null,
-          required_copper_thickness_mm: null,
-          radius_od_mm: null,
-          stack_up_height_mm: null,
-          pcb_diameter_mm: null,
-          pcb_height_mm: null,
-          radial_gap_id_mm: null,
-          radial_gap_od_mm: null,
-          avg_torque_radius_mm: null,
-          winding_resistance: null,
-          winding_resistance_ohms: null,
-          surface_magnetic_value: null,
-          hight_H_mm: null,
-          width_od_mm: null,
-          width_id_mm: null,
-          length_l_from_id_to_od_mm: null,
-          parallel_stacking_constant: DEFAULT_PARALLEL_STACKING_CONSTANT,
+      function calculateActualEfficiency(motorData) {
+        const {
+          powerIn,
+          powerOut,
+          totalLoss
+        } = motorData;
+        if (powerIn > 0 && powerOut > 0) {
+          const efficiency = (powerOut / powerIn) * 100;
+          return {
+            calculated: true,
+            value: efficiency
+          };
+        }
+        if (powerIn > 0 && totalLoss >= 0) {
+          const powerIn_W = powerIn * 1000; // Convert kW to W
+          if (powerIn_W > totalLoss) {
+            const efficiency = ((powerIn_W - totalLoss) / powerIn_W) * 100;
+            return {
+              calculated: true,
+              value: efficiency
+            };
+          }
+        }
+        return {
+          calculated: false,
+          value: null
         };
-
-        // Get PCB OD value
-        const pcbODSelect = document.getElementById("pcbOD");
-        if (pcbODSelect.value === "custom") {
-          results.pcb_stator_od_mm = parseFloat(document.getElementById("customPcbOD").value) || null;
-        } else {
-          results.pcb_stator_od_mm = parseFloat(pcbODSelect.value) || null;
-        }
-
-        let pcb_params = null;
-        if (results.pcb_stator_od_mm !== null) {
-          if (PCB_OD_PARAMETERS.hasOwnProperty(results.pcb_stator_od_mm)) {
-            pcb_params = PCB_OD_PARAMETERS[results.pcb_stator_od_mm];
-          } else {
-            const base_params = PCB_OD_PARAMETERS[100];
-            if (base_params) {
-              const factor = results.pcb_stator_od_mm / 100;
-              pcb_params = {
-                pcb_stator_id_mm: base_params.pcb_stator_id_mm * factor,
-                trace_width_id_mm: base_params.trace_width_id_mm * factor,
-                num_pcb_in_series: Math.round(
-                  base_params.num_pcb_in_series / factor
-                ),
-                layer_parallel: Math.round(
-                  base_params.layer_parallel * factor
-                ),
-                cost_factor_pcb: base_params.cost_factor_pcb * factor,
-                cost_factor_magnets: base_params.cost_factor_magnets * factor,
-                miscellaneous_cost: base_params.miscellaneous_cost * factor,
-                pcb_stator_od_mm: results.pcb_stator_od_mm,
-                weight_factor: base_params.weight_factor * factor,
-              };
-            }
-          }
-        }
-
-        // Update the results with the calculated values
-        if (pcb_params) {
-          Object.assign(results, pcb_params);
-        }
-
-        // Calculate total_pcb
-        if (results.num_pcb_in_series !== null && results.layer_parallel !== null) {
-          results.total_pcb = results.num_pcb_in_series * results.layer_parallel;
-        }
-
-        function calculate_efficiency(results) {
-          /**
-           * Calculate motor efficiency using one of three methods:
-           * 1. Direct power ratio (power_out / power_in)
-           * 2. Electrical method (voltage and current with losses)
-           * 3. Force method (force and conductor length with losses)
-           * Returns True if efficiency was calculated, False otherwise.
-           */
-          // Only calculate if efficiency isn't already set
-          if (results.efficiency_percent !== null && results.efficiency_percent !== undefined) {
-            return false;
-          }
-
-          // Method 1: Using Power Out and Power In
-          if (results.power_out_kw !== null && results.power_in_kw !== null && results.power_in_kw > 0) {
-            const eff = (results.power_out_kw / results.power_in_kw) * 100;
-            if (0 < eff && eff <= 100) {
-              results.efficiency_percent = eff;
-              return true;
-            } else {
-              if (eff > 100) {
-                results.status_messages = results.status_messages || [];
-                results.status_messages.push("Warning: Efficiency >100% (Power Ratio Method) - check input values");
-              } else {
-                results.status_messages = results.status_messages || [];
-                results.status_messages.push("Warning: Efficiency ≤0% (Power Ratio Method) - check input values");
-              }
-            }
-          }
-
-          // Method 2: Using Voltage and Current (with losses)
-          if (results.voltage_v !== null && results.current_a !== null) {
-            // Calculate input power in kW
-            const Pin_kw = (results.voltage_v * results.current_a) / 1000;
-
-            // Calculate winding resistance
-            const Rw = calculate_winding_resistance(results);
-            const I0 = 0.3;  // No-load current (A)
-
-            // Calculate losses in kW
-            const Pcu_kw = (Math.pow(results.current_a, 2) * Rw) / 1000;
-            // Core loss (assumed 5% of input power)
-            const Pcore_kw = (results.voltage_v * I0) / 1000;
-            // Mechanical loss (assumed 3% of input power)
-            const Pmech_kw = 0.03 * Pin_kw;
-
-            if (Pin_kw > (Pcu_kw + Pcore_kw + Pmech_kw)) {
-              const Pout_kw = Pin_kw - Pcu_kw - Pcore_kw - Pmech_kw;
-              const eff = (Pout_kw / Pin_kw) * 100;
-
-              if (0 < eff && eff <= 100) {
-                results.power_out_kw = Pout_kw;
-                results.efficiency_percent = eff;
-                return true;
-              } else if (eff > 100) {
-                results.status_messages = results.status_messages || [];
-                results.status_messages.push("Warning: Efficiency >100% (Electrical Method) - check loss model");
-              } else {
-                results.status_messages = results.status_messages || [];
-                results.status_messages.push("Warning: Efficiency ≤0% (Electrical Method) - losses too high");
-              }
-            }
-          }
-
-          // Method 3: Force-Based with Losses
-          if (results.force_n !== null &&
-            results.conductor_length_2phase_m !== null &&
-            DEFAULT_MAGNET_STRENGTH_T !== null &&
-            results.rpm !== null &&
-            results.avg_torque_radius_mm !== null) {
-
-            try {
-              // Calculate current from Lorentz force
-              const I = results.force_n / (results.conductor_length_2phase_m * DEFAULT_MAGNET_STRENGTH_T);
-
-              // Calculate winding resistance
-              const Rw = calculate_winding_resistance(results);
-
-              // Convert to SI units
-              const radius_m = results.avg_torque_radius_mm / 1000;
-              const angular_velocity = results.rpm * (2 * Math.PI) / 60;
-
-              // Calculate electromagnetic power
-              const em_power_kw = (results.force_n * angular_velocity * radius_m) / 1000;
-
-              // Estimate losses
-              const I0 = 0.3;  // No-load current (A)
-              const Pcu_kw = (Math.pow(I, 2) * Rw) / 1000;
-              const Pcore_kw = 0.05 * em_power_kw;  // Core loss (5% of EM power)
-              const Pmech_kw = 0.03 * em_power_kw;  // Mechanical loss (3% of EM power)
-
-              // Calculate output power and efficiency
-              if (em_power_kw > (Pcu_kw + Pcore_kw + Pmech_kw)) {
-                const Pout_kw = em_power_kw - Pcore_kw - Pmech_kw;
-                const Pin_kw = em_power_kw + Pcu_kw;
-                const eff = (Pout_kw / Pin_kw) * 100;
-
-                if (0 < eff && eff <= 100) {
-                  results.power_out_kw = Pout_kw;
-                  results.efficiency_percent = eff;
-                  results.current_a = I;
-                  return true;
-                }
-              }
-            } catch (e) {
-              results.status_messages = results.status_messages || [];
-              results.status_messages.push("Error in force-based efficiency: " + e.message);
-            }
-          }
-
-          // If all methods fail
-          results.status_messages = results.status_messages || [];
-          results.status_messages.push("Efficiency could not be calculated - insufficient data");
-          return false;
-        }
-
-
-
-        // Perform calculations iteratively
-        const max_iterations = 20;
-        for (let i = 0; i < max_iterations; i++) {
-          let something_calculated_in_this_pass = false;
-
-          // Calculate power_in_kw
-          if (
-            results.power_in_kw === null && results.current_a !== null && results.voltage_v !== null
-          ) {
-            results.power_in_kw = (results.current_a * results.voltage_v) / 1000;
-            something_calculated_in_this_pass = true;
-          }
-
-          // Calculate power_out_kw
-          if (
-            results.power_out_kw === null && results.efficiency_percent !== null && results.power_in_kw !== null && results.efficiency_percent > 0
-          ) {
-            results.power_out_kw = (results.efficiency_percent / 100) * results.power_in_kw;
-            something_calculated_in_this_pass = true;
-          }
-
-          // Calculate power_in_kw
-          if (
-            results.power_in_kw === null && results.power_out_kw !== null && results.efficiency_percent !== null && results.efficiency_percent > 0
-          ) {
-            results.power_in_kw = results.power_out_kw / (results.efficiency_percent / 100);
-            something_calculated_in_this_pass = true;
-          }
-
-          // Calculate current_a
-          if (
-            results.current_a === null && results.power_in_kw !== null && results.voltage_v !== null && results.voltage_v > 0
-          ) {
-            results.current_a = (results.power_in_kw * 1000) / results.voltage_v;
-            something_calculated_in_this_pass = true;
-          }
-
-          // Calculate voltage_v from power_in_kw and current_a
-          if (results.voltage_v === null && results.power_in_kw !== null && results.current_a !== null && results.current_a > 0) {
-            results.voltage_v = (results.power_in_kw * 1000) / results.current_a;
-            something_calculated_in_this_pass = true;
-          }
-
-          // Calculate rpm
-          if (
-            results.rpm === null && results.power_out_kw !== null && results.torque_nm !== null && results.torque_nm !== 0
-          ) {
-            results.rpm = (results.power_out_kw * 1000 * 60) / (results.torque_nm * (2 * Math.PI));
-            something_calculated_in_this_pass = true;
-          }
-
-          // Calculate torque from power and rpm
-          if (
-            results.torque_nm === null && results.power_out_kw !== null && results.rpm !== null && results.rpm > 0
-          ) {
-            results.torque_nm = (results.power_out_kw * 1000 * 60) / (results.rpm * 2 * Math.PI);
-            something_calculated_in_this_pass = true;
-          }
-
-          // Calculate pcb_stator_id_mm
-          if (pcb_params) {
-            if (results.pcb_stator_id_mm !== null && results.id_circumference_mm === null) {
-              results.id_circumference_mm = results.pcb_stator_id_mm * Math.PI;
-              something_calculated_in_this_pass = true;
-            }
-
-            // Calculate number_of_lines
-            if (results.number_of_lines === null && results.id_circumference_mm !== null && results.trace_width_id_mm !== null) {
-              const temp = results.id_circumference_mm / (results.trace_width_id_mm + DEFAULT_TRACE_GAP_MM);
-              const significance = 6;
-              results.number_of_lines = parseInt(significance * Math.ceil(temp / significance));
-              something_calculated_in_this_pass = true;
-            }
-
-            // Calculate trace_id_circumference_mm
-            if (results.number_of_lines !== null && results.trace_width_id_mm !== null && results.trace_id_circumference_mm === null) {
-              results.trace_id_circumference_mm = results.number_of_lines * (DEFAULT_TRACE_GAP_MM + results.trace_width_id_mm);
-              something_calculated_in_this_pass = true;
-            }
-
-            // Calculate trace_radius_id_mm
-            if (results.trace_id_circumference_mm !== null && results.trace_radius_id_mm === null) {
-              results.trace_radius_id_mm = results.trace_id_circumference_mm / (2 * Math.PI);
-              something_calculated_in_this_pass = true;
-            }
-
-            // Calculate radial_gap_id_mm
-            if (results.trace_radius_id_mm !== null && results.pcb_stator_id_mm !== null && results.radial_gap_id_mm === null) {
-              results.radial_gap_id_mm = results.trace_radius_id_mm - (results.pcb_stator_id_mm / 2);
-              something_calculated_in_this_pass = true;
-            }
-
-            // Calculate radial_gap_od_mm
-            if (results.radial_gap_od_mm === null && results.pcb_stator_od_mm !== null) {
-              results.radial_gap_od_mm = DEFAULT_TRACE_GAP_MM;
-              something_calculated_in_this_pass = true;
-            }
-
-            // Calculate non_magnet_area_mm
-            if (results.trace_radius_id_mm !== null && results.non_magnet_area_mm === null) {
-              results.non_magnet_area_mm = results.trace_radius_id_mm;
-              something_calculated_in_this_pass = true;
-            }
-
-            // Calculate trace_radius_od_mm
-            if (results.pcb_stator_od_mm !== null && results.trace_radius_od_mm === null) {
-              results.trace_radius_od_mm = ((results.pcb_stator_od_mm / 2) - DEFAULT_TRACE_GAP_MM);
-              something_calculated_in_this_pass = true;
-            }
-
-            // Calculate trace_od_circumference_mm
-            if (results.trace_radius_od_mm !== null && results.trace_od_circumference_mm === null) {
-              results.trace_od_circumference_mm = results.trace_radius_od_mm * 2 * Math.PI;
-              something_calculated_in_this_pass = true;
-            }
-
-            // Calculate trace_thickness_od_mm
-            if (results.trace_od_circumference_mm !== null && results.number_of_lines !== null && results.number_of_lines > 0 && results.trace_thickness_od_mm === null) {
-              results.trace_thickness_od_mm = results.trace_od_circumference_mm / results.number_of_lines - DEFAULT_TRACE_GAP_MM;
-              something_calculated_in_this_pass = true;
-            }
-
-            // Calculate trace_length_radial_mm
-            if (results.trace_radius_od_mm !== null && results.trace_radius_id_mm !== null && results.trace_length_radial_mm === null) {
-              results.trace_length_radial_mm = (results.trace_radius_od_mm - results.trace_radius_id_mm);
-              something_calculated_in_this_pass = true;
-            }
-
-            // Calculate num_lines_per_phase
-            if (results.number_of_lines !== null && results.num_lines_per_phase === null) {
-              results.num_lines_per_phase = results.number_of_lines / DEFAULT_NUM_PHASE;
-              something_calculated_in_this_pass = true;
-            }
-
-            // Calculate num_lines_180
-            if (results.num_lines_per_phase !== null && results.num_lines_180 === null) {
-              results.num_lines_180 = results.num_lines_per_phase / 2;
-              something_calculated_in_this_pass = true;
-            }
-
-            // Calculate coil_per_phase_180
-            if (results.num_lines_180 !== null && results.coil_per_phase_180 === null) {
-              results.coil_per_phase_180 = results.num_lines_180 - 1;
-              something_calculated_in_this_pass = true;
-            }
-
-            // Calculate num_coils_per_phase
-            if (results.coil_per_phase_180 !== null && results.num_coils_per_phase === null) {
-              results.num_coils_per_phase = results.coil_per_phase_180 * 2;
-              something_calculated_in_this_pass = true;
-            }
-
-            // Calculate num_stator_coils
-            if (results.num_coils_per_phase !== null && results.num_stator_coils === null) {
-              results.num_stator_coils = DEFAULT_NUM_PHASE * results.num_coils_per_phase;
-              something_calculated_in_this_pass = true;
-            }
-
-            // Calculate magnet_poles
-            if (results.num_stator_coils !== null && results.magnet_poles === null) {
-              results.magnet_poles = results.num_stator_coils + 2;
-              something_calculated_in_this_pass = true;
-            }
-
-            // Calculate current_conducting_radial_mm
-            if (results.trace_length_radial_mm !== null && results.current_conducting_radial_mm === null) {
-              results.current_conducting_radial_mm = results.trace_length_radial_mm - (DEFAULT_TRACE_WIDTH_CURVED_LINE / 2);
-              something_calculated_in_this_pass = true;
-            }
-
-            // Calculate total_conductor_length_m
-            if (results.number_of_lines !== null && results.current_conducting_radial_mm !== null && results.total_conductor_length_m === null) {
-              results.total_conductor_length_m = (results.current_conducting_radial_mm * results.number_of_lines) / 1000;
-              something_calculated_in_this_pass = true;
-            }
-
-            // Calculate on_conductor_length_m
-            if (results.total_conductor_length_m !== null && results.on_conductor_length_m === null) {
-              results.on_conductor_length_m = (results.total_conductor_length_m / 3) * 2;
-              something_calculated_in_this_pass = true;
-            }
-
-            // Calculate radius_od_mm
-            if (results.non_magnet_area_mm !== null && results.current_conducting_radial_mm !== null && results.radius_od_mm === null) {
-              results.radius_od_mm = results.non_magnet_area_mm + results.current_conducting_radial_mm;
-              something_calculated_in_this_pass = true;
-            }
-
-            // Calculate avg_torque_radius_mm
-            if (results.avg_torque_radius_mm === null && results.current_conducting_radial_mm !== null && results.non_magnet_area_mm !== null) {
-              results.avg_torque_radius_mm = (results.current_conducting_radial_mm / 2) + results.non_magnet_area_mm;
-              something_calculated_in_this_pass = true;
-            }
-
-            // Calculate conductor_length_2phase_m
-            if (results.on_conductor_length_m !== null && results.num_pcb_in_series !== null && results.conductor_length_2phase_m === null) {
-              results.conductor_length_2phase_m = results.on_conductor_length_m * results.num_pcb_in_series;
-              something_calculated_in_this_pass = true;
-            }
-
-            if (results.stack_up_height_mm === null && results.layer_parallel !== null && results.num_pcb_in_series !== null) {
-              results.stack_up_height_mm = (results.num_pcb_in_series * results.layer_parallel * DEFAULT_PCB_THICKNESS_MM)
-                + (((results.layer_parallel * results.num_pcb_in_series) + 1) * DEFAULT_PM_ROTOR_THICKNESS_MM)
-                + (results.layer_parallel * results.num_pcb_in_series * DEFAULT_AIR_GAP_MM);
-              something_calculated_in_this_pass = true;
-            }
-
-            // Calculate average_trace_width_mm
-            if (results.trace_length_radial_mm !== null && results.trace_length_radial_mm > 0 && results.trace_width_id_mm !== null && results.trace_thickness_od_mm !== null && results.average_trace_width_mm === null) {
-              results.average_trace_width_mm = (((results.trace_width_id_mm + results.trace_thickness_od_mm) / 2 * results.trace_length_radial_mm) + (DEFAULT_TRACE_GAP_MM * DEFAULT_TRACE_GAP_MM)) / (results.trace_length_radial_mm + DEFAULT_TRACE_GAP_MM);
-              something_calculated_in_this_pass = true;
-            }
-
-            // Calculate required_copper_thickness_mm
-            if (results.layer_parallel !== null && results.required_copper_thickness_mm === null) {
-              results.required_copper_thickness_mm = DEFAULT_ONE_PCB_OZ_FT2 * results.layer_parallel;
-              something_calculated_in_this_pass = true;
-            }
-          }
-
-          // calculate length_l_from_id_to_od_mm
-          if (results.trace_length_radial_mm !== null && results.length_l_from_id_to_od_mm === null) {
-            results.length_l_from_id_to_od_mm = results.trace_length_radial_mm;
-            something_calculated_in_this_pass = true;
-          }
-
-          // calculate width_id_mm
-          if (results.width_id_mm === null && results.trace_id_circumference_mm !== null && results.magnet_poles !== null) {
-            results.width_id_mm = (results.trace_id_circumference_mm / results.magnet_poles) - DEFAULT_TRACE_GAP_MM;
-            something_calculated_in_this_pass = true;
-          }
-
-          // calculate width_od_mm
-          if (results.width_od_mm === null && results.trace_od_circumference_mm !== null && results.magnet_poles !== null) {
-            results.width_od_mm = (results.trace_od_circumference_mm / results.magnet_poles) - DEFAULT_TRACE_GAP_MM;
-            something_calculated_in_this_pass = true;
-          }
-
-          // calculate hight_h_mm
-          if (results.hight_H_mm === null) {
-            results.hight_H_mm = DEFAULT_PM_ROTOR_THICKNESS_MM;
-            something_calculated_in_this_pass = true;
-          }
-
-          // Calculate surface_magnetic_value
-          if (results.surface_magnetic_value === null && results.parallel_stacking_constant !== null && results.width_od_mm !== null && results.width_id_mm !== null && results.length_l_from_id_to_od_mm !== null && results.hight_H_mm !== null) {
-            results.surface_magnetic_value = (DEFAULT_REMANENCE_BR_TESLA / Math.PI) * Math.atan((2 * results.hight_H_mm * Math.sqrt(Math.pow(results.width_od_mm, 2) + Math.pow((results.width_id_mm + results.length_l_from_id_to_od_mm) / 2, 2) + 4 * Math.pow(results.hight_H_mm, 2))) / (results.width_od_mm * ((results.width_id_mm + results.length_l_from_id_to_od_mm) / 2))) * results.parallel_stacking_constant;
-            something_calculated_in_this_pass = true;
-          }
-
-          // // Calculate surface_magnetic_value
-          // if (results.surface_magnetic_value === null && results.parallel_stacking_constant !== null && results.width_od_mm !== null && results.width_id_mm !== null && results.length_l_from_id_to_od_mm !== null && results.hight_H_mm !== null) {
-          //   const term1 = Math.pow(results.width_od_mm, 2);
-          //   const term2 = Math.pow((results.width_id_mm + results.length_l_from_id_to_od_mm) / 2, 2);
-          //   const term3 = 4 * Math.pow(results.hight_H_mm, 2);
-
-          //   const numerator = 2 * results.hight_H_mm * Math.sqrt(term1 + term2 + term3);
-          //   const denominator = results.width_od_mm * ((results.width_id_mm + results.length_l_from_id_to_od_mm) / 2);
-
-          //   results.surface_magnetic_value = (DEFAULT_REMANENCE_BR_TESLA / Math.PI) *
-          //     Math.atan(numerator / denominator) * results.parallel_stacking_constant;
-          //   something_calculated_in_this_pass = true;
-          // }
-
-          // calculate force_n
-          if (results.force_n === null && results.current_a !== null && results.conductor_length_2phase_m !== null && results.surface_magnetic_value !== null) {
-            results.force_n = results.current_a * results.conductor_length_2phase_m * results.surface_magnetic_value;
-            something_calculated_in_this_pass = true;
-          }
-
-          // calculate torque_nm from force and radius
-          if (results.torque_nm === null && results.force_n !== null && results.avg_torque_radius_mm !== null) {
-            results.torque_nm = results.force_n * (results.avg_torque_radius_mm / 1000);
-            something_calculated_in_this_pass = true;
-          }
-
-          // // calculate efficiency_percent
-          if (results.efficiency_percent === null) {
-            let calculated_eff = null;
-            if (results.power_out_kw !== null && results.power_in_kw !== null && results.power_in_kw > 0) {
-              calculated_eff = (results.power_out_kw / results.power_in_kw) * 100;
-            } else if (results.voltage_v !== null && results.current_a !== null && results.conductor_length_2phase_m !== null && results.trace_width_id_mm !== null && results.layer_parallel !== null) {
-              const Pin_kw = (results.voltage_v * results.current_a) / 1000;
-              const Rw = calculate_winding_resistance(results);
-              const Pcu_kw = (results.current_a * results.current_a * Rw) / 1000;
-              const Pcore_kw = 0.05 * Pin_kw;
-              const Pmech_kw = 0.03 * Pin_kw;
-
-              if (Pin_kw > Pcu_kw + Pcore_kw + Pmech_kw) {
-                const Pout_kw_derived = Pin_kw - Pcu_kw - Pcore_kw - Pmech_kw;
-                if (Pout_kw_derived > 0) {
-                  calculated_eff = (Pout_kw_derived / Pin_kw) * 100;
-                  if (results.power_out_kw === null) {
-                    results.power_out_kw = Pout_kw_derived;
-                  }
-                }
-              }
-            }
-
-            // Add this line after the loop:
-            calculate_efficiency(results);
-
-            // Check if the calculated efficiency is valid
-            if (calculated_eff !== null && calculated_eff >= 0 && calculated_eff <= 100) {
-              results.efficiency_percent = calculated_eff;
-              something_calculated_in_this_pass = true;
-            }
-          }
-
-          // Calculate weight
-          if (results.weight_g === null && results.total_pcb !== null && pcb_params !== null && pcb_params.weight_factor !== null) {
-            results.weight_g = results.total_pcb * pcb_params.weight_factor;
-            something_calculated_in_this_pass = true;
-          }
-
-          // Calculate power density
-          if (results.power_density_kw_kg === null && results.power_out_kw !== null && results.weight_g !== null && results.weight_g > 0) {
-            results.power_density_kw_kg = results.power_out_kw / (results.weight_g / 1000);
-            something_calculated_in_this_pass = true;
-          }
-
-          // Calculate kv_rating
-          if (results.kv_rating === null && results.rpm !== null && results.voltage_v !== null && results.voltage_v > 0) {
-            results.kv_rating = results.rpm / results.voltage_v;
-            something_calculated_in_this_pass = true;
-          }
-
-          // Calculate cost
-          if (results.cost_inr === null && results.total_pcb !== null && pcb_params !== null && results.number_of_lines !== null) {
-            const estimated_num_magnets = results.number_of_lines + 2;
-            results.cost_inr = results.total_pcb * pcb_params.cost_factor_pcb + estimated_num_magnets * pcb_params.cost_factor_magnets + pcb_params.miscellaneous_cost;
-            something_calculated_in_this_pass = true;
-          }
-
-          // If nothing was calculated in this pass, break
-          if (!something_calculated_in_this_pass) {
-            break;
-          }
-        }
-
-        // Update the UI with the results
-        motorTab.querySelector("#powerIn").textContent = fmt(results.power_in_kw, " kW");
-        motorTab.querySelector("#currentResult").textContent = fmt(results.current_a, " A");
-        motorTab.querySelector("#voltageResult").textContent = fmt(results.voltage_v, " V");
-        motorTab.querySelector("#efficiencyResult").textContent = fmt(results.efficiency_percent, "%");
-        motorTab.querySelector("#powerOutResult").textContent = fmt(results.power_out_kw, " kW");
-        motorTab.querySelector("#torqueResult").textContent = fmt(results.torque_nm, " Nm");
-        motorTab.querySelector("#rpmResult").textContent = fmt(results.rpm, "");
-        motorTab.querySelector("#forceResult").textContent = fmt(results.force_n, " N");
-        motorTab.querySelector("#pcbODResult").textContent = fmt(results.pcb_stator_od_mm, " mm");
-        motorTab.querySelector("#stackHeight").textContent = fmt(results.stack_up_height_mm, " mm");
-        motorTab.querySelector("#weightResult").textContent = fmt(results.weight_g, " g");
-        motorTab.querySelector("#powerDensity").textContent = fmt(results.power_density_kw_kg, " kW/kg");
-        motorTab.querySelector("#kvRating").textContent = fmt(results.kv_rating, "RPM/V");
-        motorTab.querySelector("#costResult").textContent = fmt(results.cost_inr, " ₹");
-        motorTab.querySelector("#powerIn").textContent = fmt(results.power_in_kw, " kW");
       }
 
-      // Initialize the calculator
-      updateCalculations();
-    })();
+
+      function calculateMotorParameters() {
+        try {
+          const pcbStatorOD = getSafeNumber('pcbStatorOD');
+          const pcbStatorID = getSafeNumber('pcbStatorID');
+          const pcbBoardThickness = getSafeNumber('pcbBoardThickness');
+          const traceWidthID = getSafeNumber('traceWidthID');
+          const traceGap = getSafeNumber('traceGap');
+          const pcbLayerOz = getSafeNumber('pcbLayerOz');
+          const numPCBLayers = getSafeNumber('numPCBLayers');
+          const numPCBLayersseries = getSafeNumber('numPCBLayersseries');
+          const numPCBLayersParallel = getSafeNumber('numPCBLayersParallel');
+          const pmRotorHeight = getSafeNumber('pmRotorHeight');
+          const airGap = getSafeNumber('airGap');
+          const remanence = getSafeNumber('remanence');
+          const current = getSafeNumber('current');
+          const numCells = getSafeNumber('numCells');
+          const cellChargeUnit = getSafeNumber('cellChargeUnit');
+          const motorParallelConstant = getSafeNumber('motorParallelConstant', 1.0);
+
+          if (pcbStatorOD <= pcbStatorID) {
+            displayError('PCB Stator OD must be greater than ID');
+            return;
+          }
+          if (numPCBLayers <= 0 || numPCBLayersseries <= 0) {
+            displayError('PCB layers cannot be zero');
+            return;
+          }
+
+          const results = {
+            statorIDCircumference: null,
+            numLines: null,
+            traceCircumferenceID: null,
+            traceRadiusID: null,
+            radialGapID: null,
+            radialGapOD: null,
+            curvedLineWidth: null,
+            traceRadiusOD: null,
+            traceCircumferenceOD: null,
+            traceWidthOD: null,
+            traceWidthID: traceWidthID,
+            traceLengthRadial: null,
+            currentConductingRadial: null,
+            numPCB: null,
+            stackupHeight: null,
+            numPhase: 3,
+            numLinesPerPhase: null,
+            numLinesPerPhase180: null,
+            coilPerPhase180: null,
+            perPhaseCoil: null,
+            numStatorCoil: null,
+            magnetPoles: null,
+            totalConductorLength: null,
+            onConductorLength: null,
+            all3Phase: null,
+            twoPhase: null,
+            conductorLength2Phase: null,
+            conductorLengthAll3Phase: null,
+            reqCopperThickness: null,
+            nonMagnetArea: null,
+            radiusOD: null,
+            avgTorqueRadius: null,
+            height: null,
+            widthOD: null,
+            widthID: null,
+            lengthIDtoOD: null,
+            motorParallelConstant: motorParallelConstant,
+            surfaceMagneticValue: null,
+            voltage: null,
+            powerIn: null,
+            force: null,
+            torque: null,
+            powerOut: null,
+            rpm: null,
+            kv: null,
+            avgTraceWidth: null,
+            copperLoss: null,
+            coreLoss: null,
+            mechanicalLoss: null,
+            strayLoss: null,
+            totalLoss: null,
+            actualEfficiency: null,
+            current: current
+          };
+
+          const maxiterations = 7;
+          for (let i = 0; i < maxiterations; i++) {
+            let changed = false;
+            if (results.statorIDCircumference === null) {
+              results.statorIDCircumference = (pcbStatorID + traceGap) * Math.PI;
+              changed = true;
+            }
+            if (results.numLines === null && results.statorIDCircumference !== null) {
+              results.numLines = Math.ceil(results.statorIDCircumference / (traceWidthID + traceGap));
+              results.numLines = Math.ceil(results.numLines / 6) * 6;
+              changed = true;
+            }
+            if (results.traceCircumferenceID === null && results.numLines !== null) {
+              results.traceCircumferenceID = results.numLines * (traceWidthID + traceGap);
+              changed = true;
+            }
+            if (results.traceRadiusID === null && results.traceCircumferenceID !== null) {
+              results.traceRadiusID = results.traceCircumferenceID / (2 * Math.PI);
+              changed = true;
+            }
+            if (results.radialGapID === null && results.traceRadiusID !== null) {
+              results.radialGapID = results.traceRadiusID - (pcbStatorID / 2);
+              changed = true;
+            }
+            if (results.radialGapOD === null) {
+              results.radialGapOD = traceGap;
+              changed = true;
+            }
+            if (results.curvedLineWidth === null) {
+              results.curvedLineWidth = traceGap;
+              changed = true;
+            }
+            if (results.traceRadiusOD === null) {
+              results.traceRadiusOD = (pcbStatorOD / 2) - results.radialGapOD;
+              changed = true;
+            }
+            if (results.traceCircumferenceOD === null && results.traceRadiusOD !== null) {
+              results.traceCircumferenceOD = 2 * Math.PI * results.traceRadiusOD;
+              changed = true;
+            }
+            if (results.traceWidthOD === null && results.traceCircumferenceOD !== null) {
+              results.traceWidthOD = (results.traceCircumferenceOD / results.numLines) - traceGap;
+              changed = true;
+            }
+            if (results.traceLengthRadial === null && results.traceRadiusOD !== null && results.traceRadiusID !== null) {
+              results.traceLengthRadial = results.traceRadiusOD - results.traceRadiusID;
+              changed = true;
+            }
+            if (results.currentConductingRadial === null && results.traceLengthRadial !== null) {
+              results.currentConductingRadial = results.traceLengthRadial - (traceGap / 2);
+              changed = true;
+            }
+            if (results.numPCB === null) {
+              results.numPCB = (numPCBLayersseries / numPCBLayers) * numPCBLayersParallel;
+              changed = true;
+            }
+            if (results.stackupHeight === null && results.numPCB !== null) {
+              results.stackupHeight = (results.numPCB * pcbBoardThickness) + ((results.numPCB + 1) * pmRotorHeight) + (results.numPCB * airGap);
+              changed = true;
+            }
+            if (results.numLinesPerPhase === null && results.numLines !== null) {
+              results.numLinesPerPhase = results.numLines / 3;
+              changed = true;
+            }
+            if (results.numLinesPerPhase180 === null && results.numLinesPerPhase !== null) {
+              results.numLinesPerPhase180 = results.numLinesPerPhase / 2;
+              changed = true;
+            }
+            if (results.coilPerPhase180 === null && results.numLinesPerPhase180 !== null) {
+              results.coilPerPhase180 = Math.max(0, results.numLinesPerPhase180 - 1);
+              changed = true;
+            }
+            if (results.perPhaseCoil === null && results.coilPerPhase180 !== null) {
+              results.perPhaseCoil = results.coilPerPhase180 * 2;
+              changed = true;
+            }
+            if (results.numStatorCoil === null && results.perPhaseCoil !== null) {
+              results.numStatorCoil = 3 * results.perPhaseCoil;
+              changed = true;
+            }
+            if (results.magnetPoles === null && results.numStatorCoil !== null) {
+              results.magnetPoles = results.numStatorCoil + 2;
+              changed = true;
+            }
+            if (results.totalConductorLength === null && results.currentConductingRadial !== null) {
+              results.totalConductorLength = (results.currentConductingRadial * results.numLines) / 1000;
+              changed = true;
+            }
+            if (results.onConductorLength === null && results.totalConductorLength !== null) {
+              results.onConductorLength = (results.totalConductorLength / 3) * 2;
+              changed = true;
+            }
+            if (results.all3Phase === null && results.totalConductorLength !== null) {
+              results.all3Phase = results.totalConductorLength * numPCBLayersseries;
+              changed = true;
+            }
+            if (results.twoPhase === null && results.onConductorLength !== null) {
+              results.twoPhase = results.onConductorLength * numPCBLayersseries;
+              changed = true;
+            }
+            if (results.conductorLength2Phase === null) {
+              results.conductorLength2Phase = results.onConductorLength;
+              changed = true;
+            }
+            if (results.conductorLengthAll3Phase === null) {
+              results.conductorLengthAll3Phase = results.totalConductorLength;
+              changed = true;
+            }
+            if (results.reqCopperThickness === null) {
+              results.reqCopperThickness = pcbLayerOz * numPCBLayersParallel;
+              changed = true;
+            }
+            if (results.nonMagnetArea === null && results.traceRadiusID !== null) {
+              results.nonMagnetArea = results.traceRadiusID;
+              changed = true;
+            }
+            if (results.radiusOD === null && results.nonMagnetArea !== null) {
+              results.radiusOD = results.nonMagnetArea + results.currentConductingRadial;
+              changed = true;
+            }
+            if (results.avgTorqueRadius === null && results.currentConductingRadial !== null) {
+              results.avgTorqueRadius = (results.currentConductingRadial / 2) + results.nonMagnetArea;
+              changed = true;
+            }
+            if (results.height === null) {
+              results.height = pmRotorHeight;
+              changed = true;
+            }
+            if (results.widthOD === null && results.traceCircumferenceOD !== null && results.magnetPoles > 0) {
+              results.widthOD = (results.traceCircumferenceOD / results.magnetPoles) - traceGap;
+              changed = true;
+            }
+            if (results.widthID === null && results.traceCircumferenceID !== null && results.magnetPoles > 0) {
+              results.widthID = (results.traceCircumferenceID / results.magnetPoles) - traceGap;
+              changed = true;
+            }
+            if (results.lengthIDtoOD === null) {
+              results.lengthIDtoOD = results.traceLengthRadial;
+              changed = true;
+            }
+            if (results.surfaceMagneticValue === null && results.widthOD !== null && results.widthID !== null && results.lengthIDtoOD !== null && results.height !== null) {
+              try {
+
+                const sqrtTerm = Math.sqrt(results.lengthIDtoOD ** 2 + ((results.widthID + results.lengthIDtoOD) / 2) ** 2 + 4 * results.height ** 2);
+                const arctanArgument = (2 * results.height * sqrtTerm) / (results.widthOD * ((results.widthID + results.lengthIDtoOD) / 2));
+
+                results.surfaceMagneticValue = (remanence / Math.PI) * Math.atan(arctanArgument) * results.motorParallelConstant;
+              } catch (e) {
+                results.surfaceMagneticValue = 0;
+              }
+              changed = true;
+            }
+            if (results.voltage === null) {
+              results.voltage = numCells * cellChargeUnit;
+              changed = true;
+            }
+            if (results.powerIn === null && results.voltage !== null) {
+              results.powerIn = current * results.voltage / 1000;
+              changed = true;
+            }
+            if (results.force === null && results.surfaceMagneticValue !== null) {
+              results.force = current * results.surfaceMagneticValue * results.twoPhase;
+              changed = true;
+            }
+            if (results.torque === null && results.avgTorqueRadius !== null && results.force !== null) {
+              results.torque = (results.avgTorqueRadius / 1000) * results.force;
+              changed = true;
+            }
+            if (results.avgTraceWidth === null && traceWidthID !== null && results.traceWidthOD !== null) {
+              results.avgTraceWidth = (((traceWidthID + results.traceWidthOD) / 2 * results.traceLengthRadial) + (traceGap * traceGap)) / (results.traceLengthRadial + traceGap);
+              changed = true;
+            }
+
+            // --- Loss, Efficiency, and Performance Calculations ---
+            let copperLossW = 0;
+            if (window.syncedCopperLossFromTrace !== undefined && window.syncedCopperLossFromTrace > 0) {
+              copperLossW = window.syncedCopperLossFromTrace;
+            } else {
+              const windingResistance = calculateWindingResistance(results, current, pcbLayerOz, numPCBLayersParallel);
+              copperLossW = current * current * windingResistance;
+            }
+            results.copperLoss = copperLossW;
+            results.coreLoss = copperLossW * 0.63;
+            results.mechanicalLoss = copperLossW * 0.5;
+            results.strayLoss = copperLossW * 0.25;
+            results.totalLoss = results.copperLoss + results.coreLoss + results.mechanicalLoss + results.strayLoss;
+
+            const effResult = calculateActualEfficiency({
+              powerIn: results.powerIn,
+              powerOut: results.powerOut,
+              totalLoss: results.totalLoss
+            });
+
+            if (effResult.calculated) {
+              results.actualEfficiency = effResult.value;
+              changed = true;
+            }
+            if (results.powerOut === null && results.powerIn !== null && results.actualEfficiency !== null) {
+              results.powerOut = results.powerIn * (results.actualEfficiency / 100);
+              changed = true;
+            }
+            if (results.rpm === null && results.powerOut !== null && results.torque > 0) {
+              const powerOutWatts = results.powerOut * 1000;
+              results.rpm = (powerOutWatts * 60) / (results.torque * 2 * Math.PI);
+              changed = true;
+            }
+            if (results.kv === null && results.rpm !== null && results.voltage > 0) {
+              results.kv = results.rpm / results.voltage;
+              changed = true;
+            }
+            if (!changed) break;
+          }
+          displayResults(results);
+          window.motorResults = results;
+          syncGlobal();
+        } catch (error) {
+          console.error('Motor calculation error:', error);
+          displayError('Calculation error: ' + error.message);
+        }
+      }
+
+      function displayError(message) {
+        const resultsContainer = document.getElementById('resultsContainer');
+        resultsContainer.innerHTML = `<div class="error-message">${message}</div>`;
+      }
+
+      function displayResults(results) {
+        const resultsContainer = document.getElementById('resultsContainer');
+        resultsContainer.innerHTML = '';
+        const resultGroups = [{
+          title: 'PCB Dimensions',
+          items: [{
+            name: 'Number of PCB',
+            value: results.numPCB,
+            unit: ''
+          }, {
+            name: 'Stackup Height',
+            value: results.stackupHeight,
+            unit: 'mm'
+          }, {
+            name: 'Stator ID Circumference',
+            value: results.statorIDCircumference,
+            unit: 'mm'
+          }, {
+            name: 'Trace Circumference at ID',
+            value: results.traceCircumferenceID,
+            unit: 'mm'
+          }, {
+            name: 'Trace Radius ID',
+            value: results.traceRadiusID,
+            unit: 'mm'
+          }, {
+            name: 'Radial Gap ID',
+            value: results.radialGapID,
+            unit: 'mm'
+          }, {
+            name: 'Radial Gap OD',
+            value: results.radialGapOD,
+            unit: 'mm'
+          }, {
+            name: 'Trace Radius OD',
+            value: results.traceRadiusOD,
+            unit: 'mm'
+          }, {
+            name: 'Trace Circumference at OD',
+            value: results.traceCircumferenceOD,
+            unit: 'mm'
+          }, {
+            name: 'Trace Width OD',
+            value: results.traceWidthOD,
+            unit: 'mm'
+          }, {
+            name: 'Average Trace Width',
+            value: results.avgTraceWidth,
+            unit: 'mm'
+          }]
+        }, {
+          title: 'Stator and Rotor Configuration',
+          items: [{
+            name: 'Number of Stator Coil',
+            value: results.numStatorCoil,
+            unit: ''
+          }, {
+            name: 'Magnet Poles',
+            value: results.magnetPoles,
+            unit: ''
+          }, {
+            name: 'Number of Phase',
+            value: results.numPhase,
+            unit: ''
+          }, {
+            name: 'Per Phase Coil',
+            value: results.perPhaseCoil,
+            unit: ''
+          }, {
+            name: 'Coil per Phase 180 Apart',
+            value: results.coilPerPhase180,
+            unit: ''
+          }, {
+            name: 'Number of Lines',
+            value: results.numLines,
+            unit: ''
+          }, {
+            name: 'Number of Lines per Phase',
+            value: results.numLinesPerPhase,
+            unit: ''
+          }, {
+            name: 'Number of Lines per Phase 180 Apart',
+            value: results.numLinesPerPhase180,
+            unit: ''
+          }, {
+            name: 'Trace Length Radial Line',
+            value: results.traceLengthRadial,
+            unit: 'mm'
+          }, {
+            name: 'Curved Line Width',
+            value: results.curvedLineWidth,
+            unit: 'mm'
+          }, {
+            name: 'Current Conducting Radial Length',
+            value: results.currentConductingRadial,
+            unit: 'mm'
+          }]
+        }, {
+          title: 'Electrical Parameters',
+          items: [{
+            name: 'Total Conductor Length all 3 phases',
+            value: results.conductorLengthAll3Phase,
+            unit: 'm'
+          }, {
+            name: 'On Conductor Length (2 phases)',
+            value: results.conductorLength2Phase,
+            unit: 'm'
+          }, {
+            name: '2 Phase Switch On with series layers',
+            value: results.twoPhase,
+            unit: 'm'
+          }, {
+            name: 'All 3 Phase with series layers',
+            value: results.all3Phase,
+            unit: 'm'
+          }, {
+            name: 'Required Copper Thickness',
+            value: results.reqCopperThickness,
+            unit: 'oz/ft²'
+          }, {
+            name: 'Non Magnet Area',
+            value: results.nonMagnetArea,
+            unit: 'mm'
+          }, {
+            name: 'Radius OD',
+            value: results.radiusOD,
+            unit: 'mm'
+          }, {
+            name: 'Average Torque Radius',
+            value: results.avgTorqueRadius,
+            unit: 'mm'
+          }, {
+            name: 'Surface Magnetic Value',
+            value: results.surfaceMagneticValue,
+            unit: 'T'
+          }, {
+            name: 'Height (H)',
+            value: results.height,
+            unit: 'mm'
+          }, {
+            name: 'Width (W) OD',
+            value: results.widthOD,
+            unit: 'mm'
+          }, {
+            name: 'Width (w) ID',
+            value: results.widthID,
+            unit: 'mm'
+          }, {
+            name: 'Length (L) from ID to OD',
+            value: results.lengthIDtoOD,
+            unit: 'mm'
+          },
+          {
+            name: 'Parallel Stacking Constant',
+            value: results.motorParallelConstant,
+            unit: ''
+          },
+
+
+          {
+            name: 'Force',
+            value: results.force,
+            unit: 'N'
+          }, {
+            name: 'Voltage',
+            value: results.voltage,
+            unit: 'V'
+          }, {
+            name: 'Power In',
+            value: results.powerIn,
+            unit: 'kW'
+          }, {
+            name: 'Torque',
+            value: results.torque,
+            unit: 'Nm'
+          }, {
+            name: 'RPM',
+            value: results.rpm,
+            unit: ''
+          }, {
+            name: 'Power Out',
+            value: results.powerOut,
+            unit: 'kW'
+          }, {
+            name: 'kV',
+            value: results.kv,
+            unit: 'RPM/V'
+          }, {
+            name: 'Actual Efficiency',
+            value: results.actualEfficiency,
+            unit: '%'
+          }]
+        }, {
+          title: 'Losses and Efficiency',
+          items: [{
+            name: 'Copper Loss (P = I²R)',
+            value: results.copperLoss,
+            unit: 'W'
+          }, {
+            name: 'Core Loss',
+            value: results.coreLoss,
+            unit: 'W'
+          }, {
+            name: 'Mechanical Loss',
+            value: results.mechanicalLoss,
+            unit: 'W'
+          }, {
+            name: 'Stray Loss',
+            value: results.strayLoss,
+            unit: 'W'
+          }, {
+            name: 'Total Loss',
+            value: results.totalLoss,
+            unit: 'W'
+          }]
+        }];
+        resultGroups.forEach(group => {
+          const groupDiv = document.createElement('div');
+          groupDiv.className = 'result-group';
+          const title = document.createElement('div');
+          title.className = 'result-group-title';
+          title.textContent = group.title;
+          groupDiv.appendChild(title);
+          group.items.forEach(item => {
+            const row = document.createElement('div');
+            row.className = 'result-row';
+            const label = document.createElement('div');
+            label.className = 'result-label';
+            label.textContent = item.name;
+            const value = document.createElement('div');
+            value.className = 'result-value';
+            if (item.value !== null && item.value !== undefined && !isNaN(item.value) && isFinite(item.value)) {
+              if (item.unit === 'T' || item.unit === 'mm' || item.unit === 'm' || item.unit === 'W' || item.unit === 'Nm' || item.unit === 'N' || item.unit === 'V') {
+                value.textContent = `${item.value.toFixed(4)} ${item.unit}`;
+              } else if (item.unit === '%' || item.unit === 'kW') {
+                value.textContent = `${item.value.toFixed(2)} ${item.unit}`;
+              } else {
+                value.textContent = `${item.value.toFixed(4)} ${item.unit}`;
+              }
+            } else {
+              value.textContent = `N/A`;
+            }
+            row.appendChild(label);
+            row.appendChild(value);
+            groupDiv.appendChild(row);
+          });
+          resultsContainer.appendChild(groupDiv);
+        });
+      }
+
+      document.querySelectorAll('#motor input').forEach(input => {
+        input.addEventListener('input', calculateMotorParameters);
+      });
+      calculateMotorParameters();
+    });
 
     // --- Advanced Trace Width Calculator Script ---
     (function () {
-      const traceTab = document.querySelector("#trace");
-      const modeButtons = traceTab.querySelectorAll(".mode-btn");
-      const inputs = traceTab.querySelectorAll("input, select");
-      const riseInput = traceTab.querySelector(".rise-input");
-      const parametersRiseInput = traceTab.querySelector(
-        ".parameters-rise-input"
-      );
-      const widthInput = traceTab.querySelector(".width-input");
-      const widthResults = traceTab.querySelector(".width-results");
-      const riseResults = traceTab.querySelector(".rise-results");
-      const parametersResults = traceTab.querySelector(".parameters-results");
+      const traceTab = document.querySelector('#trace');
+      const modeButtons = traceTab.querySelectorAll('.mode-btn');
+      const inputs = traceTab.querySelectorAll('input, select');
+      const riseInput = traceTab.querySelector('.rise-input');
+      const parametersRiseInput = traceTab.querySelector('.parameters-rise-input');
+      const widthInput = traceTab.querySelector('.width-input');
+      const widthResults = traceTab.querySelector('.width-results');
+      const riseResults = traceTab.querySelector('.rise-results');
+      const parametersResults = traceTab.querySelector('.parameters-results');
 
-      modeButtons.forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const mode = btn.getAttribute("data-mode");
-          modeButtons.forEach((b) => b.classList.remove("active"));
-          btn.classList.add("active");
-
-          if (mode === "width") {
-            riseInput.classList.remove("hidden");
-            parametersRiseInput.classList.add("hidden");
-            widthInput.classList.add("hidden");
-            widthResults.classList.remove("hidden");
-            riseResults.classList.add("hidden");
-            parametersResults.classList.add("hidden");
-          } else if (mode === "rise") {
-            riseInput.classList.add("hidden");
-            parametersRiseInput.classList.add("hidden");
-            widthInput.classList.remove("hidden");
-            widthResults.classList.add("hidden");
-            riseResults.classList.remove("hidden");
-            parametersResults.classList.add("hidden");
-          } else if (mode === "parameters") {
-            riseInput.classList.add("hidden");
-            parametersRiseInput.classList.remove("hidden");
-            widthInput.classList.remove("hidden");
-            widthResults.classList.add("hidden");
-            riseResults.classList.add("hidden");
-            parametersResults.classList.remove("hidden");
+      modeButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const mode = btn.getAttribute('data-mode');
+          modeButtons.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          if (mode === 'width') {
+            riseInput.classList.remove('hidden');
+            parametersRiseInput.classList.add('hidden');
+            widthInput.classList.add('hidden');
+            widthResults.classList.remove('hidden');
+            riseResults.classList.add('hidden');
+            parametersResults.classList.add('hidden');
+          } else if (mode === 'rise') {
+            riseInput.classList.add('hidden');
+            parametersRiseInput.classList.add('hidden');
+            widthInput.classList.remove('hidden');
+            widthResults.classList.add('hidden');
+            riseResults.classList.remove('hidden');
+            parametersResults.classList.add('hidden');
+          } else if (mode === 'parameters') {
+            riseInput.classList.add('hidden');
+            parametersRiseInput.classList.remove('hidden');
+            widthInput.classList.remove('hidden');
+            widthResults.classList.add('hidden');
+            riseResults.classList.add('hidden');
+            parametersResults.classList.remove('hidden');
           }
           updateResults();
         });
       });
 
-      inputs.forEach((input) => {
-        input.addEventListener("input", updateResults);
-        input.addEventListener("change", updateResults);
+      inputs.forEach(input => {
+        input.addEventListener('input', updateResults);
+        input.addEventListener('change', updateResults);
       });
 
-      const MM_PER_MIL = 0.0254;
       const UM_PER_MIL = 25.4;
       const MIL_PER_OZ = 1.3779527559055116;
       const CM_PER_IN = 2.54;
       const CM_PER_FT = 30.48;
       const CM_PER_MIL = 0.00254;
-      const MIL2_PER_CM2 = 1550.0031000062;
 
-      const milToMm = (mil) => mil * MM_PER_MIL;
-      const milToUm = (mil) => mil * UM_PER_MIL;
-      const ozToMil = (oz) => oz * MIL_PER_OZ;
-      const mmToMil = (mm) => mm / MM_PER_MIL;
-      const umToMil = (um) => um / UM_PER_MIL;
-      const cToF = (c) => (c * 9) / 5 + 32;
-      const fToC = (f) => ((f - 32) * 5) / 9;
+      const milToUm = mil => mil * UM_PER_MIL;
+      const ozToMil = oz => oz * MIL_PER_OZ;
+      const mmToMil = mm => mm / MM_PER_MIL;
+      const umToMil = um => um / UM_PER_MIL;
+      const cToF = c => (c * 9) / 5 + 32;
+      const fToC = f => ((f - 32) * 5) / 9;
 
       const externalArea = (current, riseC) =>
         Math.pow(current / (0.048 * Math.pow(riseC, 0.44)), 1 / 0.725);
-
       const internalArea = (current, riseC) =>
         Math.pow(current / (0.024 * Math.pow(riseC, 0.44)), 1 / 0.725);
-
       const externalRise = (current, areaMil2) =>
         Math.pow(current / (0.048 * Math.pow(areaMil2, 0.725)), 1 / 0.44);
-
       const internalRise = (current, areaMil2) =>
         Math.pow(current / (0.024 * Math.pow(areaMil2, 0.725)), 1 / 0.44);
 
       function getInputs() {
-        const getValue = (id) =>
-          parseFloat(traceTab.querySelector("#" + id)?.value) || 0;
-        const getUnit = (id) => traceTab.querySelector("#" + id)?.value || "";
-        const getMode = () =>
-          traceTab
-            .querySelector(".mode-btn.active")
-            ?.getAttribute("data-mode") || "width";
-
+        const getValue = id => {
+          const element = traceTab.querySelector(`#${id}`);
+          if (!element) return 0;
+          return parseFloat(element.value) || 0;
+        };
+        const getUnit = id => {
+          const element = traceTab.querySelector(`#${id}`);
+          if (!element) return '';
+          return element.value;
+        };
+        const getMode = () => traceTab.querySelector('.mode-btn.active')?.getAttribute('data-mode') || 'width';
         const mode = getMode();
-
         return {
-          current: getValue("trace_current"),
-          ambient: getValue("trace_ambient"),
-          ambientUnit: getUnit("trace_ambientUnit"),
-          rise: getValue("trace_rise"),
-          riseUnit: getUnit("trace_riseUnit"),
-          parametersRise: getValue("trace_parameters_rise"),
-          parametersRiseUnit: getUnit("trace_parameters_riseUnit"),
-          length: getValue("trace_length_input"),
-          lengthUnit: getUnit("trace_traceUnit"),
-          thickness: getValue("trace_thickness"),
-          thicknessUnit: getUnit("trace_thicknessUnit"),
-          widthInternal: getValue("trace_width_internal"),
-          widthUnitInternal: getUnit("trace_widthUnit_internal"),
-          widthExternal: getValue("trace_width_external"),
-          widthUnitExternal: getUnit("trace_widthUnit_external"),
-          isWidthMode: mode === "width",
-          isRiseMode: mode === "rise",
-          isParametersMode: mode === "parameters",
+          current: getValue('tracecurrent'),
+          ambient: getValue('traceambient'),
+          ambientUnit: getUnit('traceambientUnit'),
+          rise: getValue('tracerise'),
+          riseUnit: getUnit('traceriseUnit'),
+          parametersRise: getValue('traceparametersrise'),
+          parametersRiseUnit: getUnit('traceparametersriseUnit'),
+          length: getValue('tracelengthinput'),
+          lengthUnit: getUnit('tracetraceUnit'),
+          thickness: getValue('tracethickness'),
+          thicknessUnit: getUnit('tracethicknessUnit'),
+          widthInternal: getValue('tracewidthinternal'),
+          widthUnitInternal: getUnit('tracewidthUnitinternal'),
+          widthExternal: getValue('tracewidthexternal'),
+          widthUnitExternal: getUnit('tracewidthUnitexternal'),
+          isWidthMode: mode === 'width',
+          isRiseMode: mode === 'rise',
+          isParametersMode: mode === 'parameters'
         };
       }
 
@@ -1982,51 +2166,38 @@
           parametersRise,
           ambient,
           widthInternal,
-          widthExternal,
+          widthExternal
         } = inputs;
-
-        if (inputs.thicknessUnit === "oz/ft²") thickness = ozToMil(thickness);
-        else if (inputs.thicknessUnit === "mm")
-          thickness = mmToMil(thickness);
-        else if (inputs.thicknessUnit === "µm")
-          thickness = umToMil(thickness);
-
+        if (inputs.thicknessUnit === 'ozft') thickness = ozToMil(thickness);
+        else if (inputs.thicknessUnit === 'mm') thickness = mmToMil(thickness);
+        else if (inputs.thicknessUnit === 'm') thickness = umToMil(thickness);
         switch (inputs.lengthUnit) {
-          case "in":
+          case 'in':
             length *= CM_PER_IN;
             break;
-          case "ft":
+          case 'ft':
             length *= CM_PER_FT;
             break;
-          case "mil":
+          case 'mil':
             length *= CM_PER_MIL;
             break;
-          case "mm":
+          case 'mm':
             length *= 0.1;
             break;
-          case "µm":
-            length *= 0.0001;
+          case 'cm':
+            length *= 1;
             break;
-          case "m":
+          case 'm':
             length *= 100;
             break;
         }
-
-        if (inputs.riseUnit === "°F") rise = fToC(rise);
-        if (inputs.ambientUnit === "°F") ambient = fToC(ambient);
-        if (inputs.parametersRiseUnit === "°F")
-          parametersRise = fToC(parametersRise);
-
-        if (inputs.widthUnitInternal === "mm")
-          widthInternal = mmToMil(widthInternal);
-        else if (inputs.widthUnitInternal === "µm")
-          widthInternal = umToMil(widthInternal);
-
-        if (inputs.widthUnitExternal === "mm")
-          widthExternal = mmToMil(widthExternal);
-        else if (inputs.widthUnitExternal === "µm")
-          widthExternal = umToMil(widthExternal);
-
+        if (inputs.riseUnit === 'F') rise = fToC(rise);
+        if (inputs.ambientUnit === 'F') ambient = fToC(ambient);
+        if (inputs.parametersRiseUnit === 'F') parametersRise = fToC(parametersRise);
+        if (inputs.widthUnitInternal === 'mm') widthInternal = mmToMil(widthInternal);
+        else if (inputs.widthUnitInternal === 'm') widthInternal = umToMil(widthInternal);
+        if (inputs.widthUnitExternal === 'mm') widthExternal = mmToMil(widthExternal);
+        else if (inputs.widthUnitExternal === 'm') widthExternal = umToMil(widthExternal);
         return {
           ...inputs,
           thickness,
@@ -2035,66 +2206,55 @@
           parametersRise,
           ambient,
           widthInternal,
-          widthExternal,
+          widthExternal
         };
       }
 
-      function calculateResistance(
-        current,
-        areaMil2,
-        lengthCm,
-        ambientTempC,
-        tempRiseC = 0
-      ) {
+      function calculateResistance(current, areaMil2, lengthCm, ambientTempC, tempRiseC = 0) {
         const RHO = 1.7e-6;
         const ALPHA = 0.0039;
-        const AREA_MIL2_TO_CM2 = 6.4516e-6;
-        const areaCm2 = areaMil2 * AREA_MIL2_TO_CM2;
-
-        if (!isFinite(areaCm2) || areaCm2 <= 0) {
-          return {
-            resistance: Infinity,
-            voltageDrop: Infinity,
-            powerLoss: Infinity,
-          };
-        }
-
+        const AREAMIL2TOCM2 = 6.4516e-6;
+        const areaCm2 = areaMil2 * AREAMIL2TOCM2;
+        if (!isFinite(areaCm2) || areaCm2 <= 0) return {
+          resistance: Infinity,
+          voltageDrop: Infinity,
+          powerLoss: Infinity
+        };
         const operatingTempC = ambientTempC + tempRiseC;
-        const resistance =
-          (RHO * lengthCm * (1 + ALPHA * (operatingTempC - 25))) / areaCm2;
+        const resistance = (RHO * lengthCm * (1 + ALPHA * (operatingTempC - 25))) / areaCm2;
         const voltageDrop = current * resistance;
         const powerLoss = current * voltageDrop;
-
-        return { resistance, voltageDrop, powerLoss };
+        return {
+          resistance,
+          voltageDrop,
+          powerLoss
+        };
       }
 
       function calculateWidth(data) {
-        const { current, rise, thickness, length, ambient } = data;
+        const {
+          current,
+          rise,
+          thickness,
+          length,
+          ambient
+        } = data;
         if (current <= 0 || rise <= 0 || thickness <= 0) return null;
-
         const areaI = internalArea(current, rise);
         const widthI = areaI / thickness;
+        const resI = calculateResistance(current, areaI, length, ambient, rise);
         const areaE = externalArea(current, rise);
         const widthE = areaE / thickness;
-
-        const resI = calculateResistance(
-          current,
-          areaI,
-          length,
-          ambient,
-          rise
-        );
-        const resE = calculateResistance(
-          current,
-          areaE,
-          length,
-          ambient,
-          rise
-        );
-
+        const resE = calculateResistance(current, areaE, length, ambient, rise);
         return {
-          internal: { width: widthI, ...resI },
-          external: { width: widthE, ...resE },
+          internal: {
+            width: widthI,
+            ...resI
+          },
+          external: {
+            width: widthE,
+            ...resE
+          }
         };
       }
 
@@ -2105,39 +2265,24 @@
           widthInternal,
           widthExternal,
           length,
-          ambient,
+          ambient
         } = data;
-        if (
-          current <= 0 ||
-          thickness <= 0 ||
-          widthInternal <= 0 ||
-          widthExternal <= 0
-        )
-          return null;
-
+        if (current <= 0 || thickness <= 0 || widthInternal <= 0 || widthExternal <= 0) return null;
         const areaI = widthInternal * thickness;
         const riseI = internalRise(current, areaI);
-        const resI = calculateResistance(
-          current,
-          areaI,
-          length,
-          ambient,
-          riseI
-        );
-
+        const resI = calculateResistance(current, areaI, length, ambient, riseI);
         const areaE = widthExternal * thickness;
         const riseE = externalRise(current, areaE);
-        const resE = calculateResistance(
-          current,
-          areaE,
-          length,
-          ambient,
-          riseE
-        );
-
+        const resE = calculateResistance(current, areaE, length, ambient, riseE);
         return {
-          internal: { rise: riseI, ...resI },
-          external: { rise: riseE, ...resE },
+          internal: {
+            rise: riseI,
+            ...resI
+          },
+          external: {
+            rise: riseE,
+            ...resE
+          }
         };
       }
 
@@ -2149,216 +2294,114 @@
           widthExternal,
           length,
           ambient,
-          parametersRise,
+          parametersRise
         } = data;
-        if (thickness <= 0 || widthInternal <= 0 || widthExternal <= 0)
-          return null;
-
+        if (thickness <= 0 || widthInternal <= 0 || widthExternal <= 0) return null;
         const areaInternalMil2 = widthInternal * thickness;
         const areaExternalMil2 = widthExternal * thickness;
-        const MIL2_TO_MM2 = 0.00064516;
-
-        const areaInternalMm2 = areaInternalMil2 * MIL2_TO_MM2;
-        const areaExternalMm2 = areaExternalMil2 * MIL2_TO_MM2;
+        const MIL2TOMM2 = 0.00064516;
+        const areaInternalMm2 = areaInternalMil2 * MIL2TOMM2;
+        const areaExternalMm2 = areaExternalMil2 * MIL2TOMM2;
         const areaInternalCm2 = areaInternalMm2 / 100;
         const areaExternalCm2 = areaExternalMm2 / 100;
         const areaInternalM2 = areaInternalMm2 / 1e6;
         const areaExternalM2 = areaExternalMm2 / 1e6;
-
         const lengthM = length / 100;
         const volumeInternalM3 = areaInternalM2 * lengthM;
         const volumeExternalM3 = areaExternalM2 * lengthM;
-
-        const resI = calculateResistance(
-          current,
-          areaInternalMil2,
-          length,
-          ambient,
-          parametersRise
-        );
-        const resE = calculateResistance(
-          current,
-          areaExternalMil2,
-          length,
-          ambient,
-          parametersRise
-        );
-
+        const resI = calculateResistance(current, areaInternalMil2, length, ambient, parametersRise);
+        const resE = calculateResistance(current, areaExternalMil2, length, ambient, parametersRise);
         return {
           internal: {
             area: {
               mm2: areaInternalMm2,
               cm2: areaInternalCm2,
-              m2: areaInternalM2,
+              m2: areaInternalM2
             },
             volume: {
               mm3: volumeInternalM3 * 1e9,
               cm3: volumeInternalM3 * 1e6,
-              m3: volumeInternalM3,
+              m3: volumeInternalM3
             },
-            ...resI,
+            ...resI
           },
           external: {
             area: {
               mm2: areaExternalMm2,
               cm2: areaExternalCm2,
-              m2: areaExternalM2,
+              m2: areaExternalM2
             },
             volume: {
               mm3: volumeExternalM3 * 1e9,
               cm3: volumeExternalM3 * 1e6,
-              m3: volumeExternalM3,
+              m3: volumeExternalM3
             },
-            ...resE,
-          },
+            ...resE
+          }
         };
       }
 
       function displayResults(data, result) {
-        const format = (val, prec = 11) =>
-          val !== null && isFinite(val) ? Number(val).toFixed(prec) : "Error";
-
+        const format = (val, prec = 11) => (val !== null && isFinite(val)) ? Number(val).toFixed(prec) : 'Error';
         if (data.isWidthMode) {
-          traceTab.querySelector(
-            "#internalWidth"
-          ).innerHTML = `Width: ${format(
-            result.internal.width
-          )} mil<br>${format(milToMm(result.internal.width))} mm | ${format(
-            milToUm(result.internal.width),
-            11
-          )} µm`;
-          traceTab.querySelector(
-            "#externalWidth"
-          ).innerHTML = `Width: ${format(
-            result.external.width
-          )} mil<br>${format(milToMm(result.external.width))} mm | ${format(
-            milToUm(result.external.width),
-            11
-          )} µm`;
-
-          traceTab.querySelector(
-            "#internalResistance"
-          ).textContent = `${format(result.internal.resistance)} Ω`;
-          traceTab.querySelector("#internalVoltage").textContent = `${format(
-            result.internal.voltageDrop
-          )} V`;
-          traceTab.querySelector("#internalPower").textContent = `${format(
-            result.internal.powerLoss
-          )} W`;
-          traceTab.querySelector(
-            "#externalResistance"
-          ).textContent = `${format(result.external.resistance)} Ω`;
-          traceTab.querySelector("#externalVoltage").textContent = `${format(
-            result.external.voltageDrop
-          )} V`;
-          traceTab.querySelector("#externalPower").textContent = `${format(
-            result.external.powerLoss
-          )} W`;
+          traceTab.querySelector('#internalWidth').innerHTML = `Width: ${format(result.internal.width)} mil<br>${format(milToMm(result.internal.width))} mm (${format(milToUm(result.internal.width), 11)} µm)`;
+          traceTab.querySelector('#externalWidth').innerHTML = `Width: ${format(result.external.width)} mil<br>${format(milToMm(result.external.width))} mm (${format(milToUm(result.external.width), 11)} µm)`;
+          traceTab.querySelector('#internalResistance').textContent = format(result.internal.resistance) + ' Ω';
+          traceTab.querySelector('#internalVoltage').textContent = format(result.internal.voltageDrop) + ' V';
+          traceTab.querySelector('#internalPower').textContent = format(result.internal.powerLoss) + ' W';
+          traceTab.querySelector('#externalResistance').textContent = format(result.external.resistance) + ' Ω';
+          traceTab.querySelector('#externalVoltage').textContent = format(result.external.voltageDrop) + ' V';
+          traceTab.querySelector('#externalPower').textContent = format(result.external.powerLoss) + ' W';
         } else if (data.isRiseMode) {
-          traceTab.querySelector("#internalRise").innerHTML = `Rise: ${format(
-            result.internal.rise
-          )} °C<br>${format(cToF(result.internal.rise))} °F`;
-          traceTab.querySelector("#externalRise").innerHTML = `Rise: ${format(
-            result.external.rise
-          )} °C<br>${format(cToF(result.external.rise))} °F`;
-
-          traceTab.querySelector(
-            "#internalRiseResistance"
-          ).textContent = `${format(result.internal.resistance)} Ω`;
-          traceTab.querySelector(
-            "#internalRiseVoltage"
-          ).textContent = `${format(result.internal.voltageDrop)} V`;
-          traceTab.querySelector(
-            "#internalRisePower"
-          ).textContent = `${format(result.internal.powerLoss)} W`;
-          traceTab.querySelector(
-            "#externalRiseResistance"
-          ).textContent = `${format(result.external.resistance)} Ω`;
-          traceTab.querySelector(
-            "#externalRiseVoltage"
-          ).textContent = `${format(result.external.voltageDrop)} V`;
-          traceTab.querySelector(
-            "#externalRisePower"
-          ).textContent = `${format(result.external.powerLoss)} W`;
+          traceTab.querySelector('#internalRise').innerHTML = `Rise: ${format(result.internal.rise)} °C<br>${format(cToF(result.internal.rise))} °F`;
+          traceTab.querySelector('#externalRise').innerHTML = `Rise: ${format(result.external.rise)} °C<br>${format(cToF(result.external.rise))} °F`;
+          traceTab.querySelector('#internalRiseResistance').textContent = format(result.internal.resistance) + ' Ω';
+          traceTab.querySelector('#internalRiseVoltage').textContent = format(result.internal.voltageDrop) + ' V';
+          traceTab.querySelector('#internalRisePower').textContent = format(result.internal.powerLoss) + ' W';
+          traceTab.querySelector('#externalRiseResistance').textContent = format(result.external.resistance) + ' Ω';
+          traceTab.querySelector('#externalRiseVoltage').textContent = format(result.external.voltageDrop) + ' V';
+          traceTab.querySelector('#externalRisePower').textContent = format(result.external.powerLoss) + ' W';
         }
-
-        traceTab.querySelectorAll(".result-category").forEach((card) => {
-          card.classList.add("pulse");
-          setTimeout(() => card.classList.remove("pulse"), 1000);
+        traceTab.querySelectorAll('.result-category').forEach(card => {
+          card.classList.add('pulse');
+          setTimeout(() => card.classList.remove('pulse'), 1000);
         });
+        window.traceResults = result;
+        window.traceInputs = data;
+        syncGlobal();
       }
 
       function displayParametersResults(result) {
-        const formatSci = (val, prec = 11) =>
-          val !== null && isFinite(val)
-            ? Number(val).toExponential(prec)
-            : "Error";
-        const formatFixed = (val, prec = 11) =>
-          val !== null && isFinite(val) ? Number(val).toFixed(prec) : "Error";
-
+        const formatSci = (val, prec = 11) => (val !== null && isFinite(val)) ? Number(val).toExponential(prec) : 'Error';
+        const formatFixed = (val, prec = 11) => (val !== null && isFinite(val)) ? Number(val).toFixed(prec) : 'Error';
         // Internal
-        traceTab.querySelector(
-          "#internalArea_mm2"
-        ).textContent = `${formatFixed(result.internal.area.mm2)} mm²`;
-        traceTab.querySelector(
-          "#internalArea_cm2"
-        ).textContent = `${formatSci(result.internal.area.cm2)} cm²`;
-        traceTab.querySelector("#internalArea_m2").textContent = `${formatSci(
-          result.internal.area.m2
-        )} m²`;
-        traceTab.querySelector(
-          "#internalVolume_mm3"
-        ).textContent = `${formatFixed(result.internal.volume.mm3)} mm³`;
-        traceTab.querySelector(
-          "#internalVolume_cm3"
-        ).textContent = `${formatSci(result.internal.volume.cm3)} cm³`;
-        traceTab.querySelector(
-          "#internalVolume_m3"
-        ).textContent = `${formatSci(result.internal.volume.m3)} m³`;
-        traceTab.querySelector(
-          "#internalParamResistance"
-        ).textContent = `${formatFixed(result.internal.resistance)} Ω`;
-        traceTab.querySelector(
-          "#internalParamVoltage"
-        ).textContent = `${formatFixed(result.internal.voltageDrop)} V`;
-        traceTab.querySelector(
-          "#internalParamPower"
-        ).textContent = `${formatFixed(result.internal.powerLoss)} W`;
-
+        traceTab.querySelector('#internalAreamm2').textContent = formatFixed(result.internal.area.mm2) + ' mm²';
+        traceTab.querySelector('#internalAreacm2').textContent = formatSci(result.internal.area.cm2) + ' cm²';
+        traceTab.querySelector('#internalAream2').textContent = formatSci(result.internal.area.m2) + ' m²';
+        traceTab.querySelector('#internalVolumemm3').textContent = formatFixed(result.internal.volume.mm3) + ' mm³';
+        traceTab.querySelector('#internalVolumecm3').textContent = formatSci(result.internal.volume.cm3) + ' cm³';
+        traceTab.querySelector('#internalVolumem3').textContent = formatSci(result.internal.volume.m3) + ' m³';
+        traceTab.querySelector('#internalParamResistance').textContent = formatFixed(result.internal.resistance) + ' Ω';
+        traceTab.querySelector('#internalParamVoltage').textContent = formatFixed(result.internal.voltageDrop) + ' V';
+        traceTab.querySelector('#internalParamPower').textContent = formatFixed(result.internal.powerLoss) + ' W';
         // External
-        traceTab.querySelector(
-          "#externalArea_mm2"
-        ).textContent = `${formatFixed(result.external.area.mm2)} mm²`;
-        traceTab.querySelector(
-          "#externalArea_cm2"
-        ).textContent = `${formatSci(result.external.area.cm2)} cm²`;
-        traceTab.querySelector("#externalArea_m2").textContent = `${formatSci(
-          result.external.area.m2
-        )} m²`;
-        traceTab.querySelector(
-          "#externalVolume_mm3"
-        ).textContent = `${formatFixed(result.external.volume.mm3)} mm³`;
-        traceTab.querySelector(
-          "#externalVolume_cm3"
-        ).textContent = `${formatSci(result.external.volume.cm3)} cm³`;
-        traceTab.querySelector(
-          "#externalVolume_m3"
-        ).textContent = `${formatSci(result.external.volume.m3)} m³`;
-        traceTab.querySelector(
-          "#externalParamResistance"
-        ).textContent = `${formatFixed(result.external.resistance)} Ω`;
-        traceTab.querySelector(
-          "#externalParamVoltage"
-        ).textContent = `${formatFixed(result.external.voltageDrop)} V`;
-        traceTab.querySelector(
-          "#externalParamPower"
-        ).textContent = `${formatFixed(result.external.powerLoss)} W`;
+        traceTab.querySelector('#externalAreamm2').textContent = formatFixed(result.external.area.mm2) + ' mm²';
+        traceTab.querySelector('#externalAreacm2').textContent = formatSci(result.external.area.cm2) + ' cm²';
+        traceTab.querySelector('#externalAream2').textContent = formatSci(result.external.area.m2) + ' m²';
+        traceTab.querySelector('#externalVolumemm3').textContent = formatFixed(result.external.volume.mm3) + ' mm³';
+        traceTab.querySelector('#externalVolumecm3').textContent = formatSci(result.external.volume.cm3) + ' cm³';
+        traceTab.querySelector('#externalVolumem3').textContent = formatSci(result.external.volume.m3) + ' m³';
+        traceTab.querySelector('#externalParamResistance').textContent = formatFixed(result.external.resistance) + ' Ω';
+        traceTab.querySelector('#externalParamVoltage').textContent = formatFixed(result.external.voltageDrop) + ' V';
+        traceTab.querySelector('#externalParamPower').textContent = formatFixed(result.external.powerLoss) + ' W';
+        window.traceResults = result;
+        window.traceInputs = getInputs();
+        syncGlobal();
       }
 
       function updateResults() {
         const data = convertUnits(getInputs());
         let result = null;
-
         if (data.isWidthMode) {
           result = calculateWidth(data);
           if (result) displayResults(data, result);
@@ -2370,188 +2413,424 @@
           if (result) displayParametersResults(result);
         }
       }
-
       updateResults();
     })();
 
     // --- Magnet Calculator Script ---
     (function () {
-      const magnetTab = document.querySelector("#magnet");
-
-      magnetTab.querySelectorAll(".input-field").forEach((input) => {
-        input.addEventListener("input", calculateMagneticField);
-        input.addEventListener("change", calculateMagneticField);
+      const magnetTab = document.querySelector('#magnet');
+      magnetTab.querySelectorAll('.input-field').forEach(input => {
+        input.addEventListener('input', calculateMagneticField);
+        input.addEventListener('change', calculateMagneticField);
+      });
+      magnetTab.querySelector('.magnet-tabs').addEventListener('click', function (e) {
+        if (e.target.classList.contains('magnet-tab-btn')) {
+          switchTab(e.target.getAttribute('data-tab'));
+        }
       });
 
-      magnetTab
-        .querySelector(".magnet-tabs")
-        .addEventListener("click", function (e) {
-          if (e.target.classList.contains("magnet-tab-btn")) {
-            switchTab(e.target.getAttribute("data-tab"));
-          }
-        });
-
-      function blockMagnet(
-        remanenceTesla,
-        heightMm,
-        lengthMm,
-        widthODMm,
-        widthIDMm
-      ) {
-        if (
-          [remanenceTesla, heightMm, lengthMm, widthODMm, widthIDMm].some(
-            (v) => isNaN(v) || v < 0
-          )
-        ) {
-          return "Error: All values must be non-negative numbers.";
+      function blockMagnet(remanenceTesla, heightMm, lengthMm, widthODMm, widthIDMm, blockParallelConstant) {
+        if ([remanenceTesla, heightMm, lengthMm, widthODMm, widthIDMm, blockParallelConstant].some(v => isNaN(v) || v <= 0)) {
+          return 'Error: All values must be positive numbers.';
         }
         const averageWidth = (widthODMm + widthIDMm) / 2;
         if (averageWidth === 0 || lengthMm === 0) {
-          return "Error: Length and average width must be greater than zero.";
+          return 'Error: Length and average width must be greater than zero.';
         }
-        const sqrtInnerTerm =
-          Math.pow(lengthMm, 2) +
-          Math.pow(averageWidth, 2) +
-          4 * Math.pow(heightMm, 2);
+        const sqrtInnerTerm = Math.pow(lengthMm, 2) + Math.pow(averageWidth, 2) + 4 * Math.pow(heightMm, 2);
         const numerator = 2 * heightMm * Math.sqrt(sqrtInnerTerm);
         const denominator = lengthMm * averageWidth;
         if (denominator === 0) {
-          return "Error: Division by zero in block magnet calculation.";
+          return 'Error: Division by zero in block magnet calculation.';
         }
         const arctanArgument = numerator / denominator;
-        const magneticField =
-          (remanenceTesla / Math.PI) * Math.atan(arctanArgument);
+        const magneticField = (remanenceTesla / Math.PI) * Math.atan(arctanArgument) * blockParallelConstant;
         return magneticField;
       }
 
       function ringMagnet(remanenceTesla, heightMm, ODmm, IDmm) {
-        if (
-          [remanenceTesla, heightMm, ODmm, IDmm].some(
-            (v) => isNaN(v) || v < 0
-          )
-        ) {
-          return "Error: All values must be non-negative numbers.";
+        if ([remanenceTesla, heightMm, ODmm, IDmm].some(v => isNaN(v) || v <= 0)) {
+          return 'Error: All values must be positive numbers.';
         }
         if (ODmm <= IDmm) {
-          return "Error: Outer diameter must be greater than inner diameter.";
+          return 'Error: Outer diameter must be greater than inner diameter.';
         }
         const heightM = heightMm / 1000;
         const ODM = ODmm / 1000;
         const IDM = IDmm / 1000;
         const rOuterM = ODM / 2;
         const rInnerM = IDM / 2;
-        if (
-          Math.pow(rOuterM, 2) + Math.pow(heightM, 2) === 0 ||
-          Math.pow(rInnerM, 2) + Math.pow(heightM, 2) === 0
-        ) {
+        if (Math.pow(rOuterM, 2) + Math.pow(heightM, 2) === 0 || Math.pow(rInnerM, 2) + Math.pow(heightM, 2) === 0) {
           return "Error: Invalid geometry for ring magnet calculation.";
         }
-        const outerTerm =
-          heightM / Math.sqrt(Math.pow(rOuterM, 2) + Math.pow(heightM, 2));
-        const innerTerm =
-          heightM / Math.sqrt(Math.pow(rInnerM, 2) + Math.pow(heightM, 2));
+        const outerTerm = heightM / Math.sqrt(Math.pow(rOuterM, 2) + Math.pow(heightM, 2));
+        const innerTerm = heightM / Math.sqrt(Math.pow(rInnerM, 2) + Math.pow(heightM, 2));
         const magneticField = (remanenceTesla / 2) * (outerTerm - innerTerm);
         return magneticField;
       }
 
       function switchTab(tabName) {
-        magnetTab.querySelectorAll(".magnet-tab-btn").forEach((btn) => {
-          btn.classList.remove("active");
-          btn.setAttribute("aria-pressed", "false");
-          if (btn.getAttribute("data-tab") === tabName) {
-            btn.classList.add("active");
-            btn.setAttribute("aria-pressed", "true");
+        magnetTab.querySelectorAll('.magnet-tab-btn').forEach(btn => {
+          btn.classList.remove('active');
+          btn.setAttribute('aria-pressed', 'false');
+          btn.setAttribute('aria-selected', 'false');
+          if (btn.getAttribute('data-tab') === tabName) {
+            btn.classList.add('active');
+            btn.setAttribute('aria-pressed', 'true');
+            btn.setAttribute('aria-selected', 'true');
           }
         });
-        magnetTab
-          .querySelectorAll(".calculator-section")
-          .forEach((section) => section.classList.remove("active"));
-        magnetTab.querySelector("#" + tabName).classList.add("active");
+        magnetTab.querySelectorAll('.calculator-section').forEach(section => {
+          section.classList.remove('active');
+        });
+        magnetTab.querySelector(`#${tabName}`).classList.add('active');
         calculateMagneticField();
       }
 
       function calculateMagneticField() {
-        const activeTab = magnetTab.querySelector(
-          ".calculator-section.active"
-        ).id;
+        const activeTab = magnetTab.querySelector('.calculator-section.active').id;
         let result = 0;
         try {
-          if (activeTab === "block") {
-            const remanence = parseFloat(
-              magnetTab.querySelector("#block_remanence").value
-            );
-            const height = parseFloat(
-              magnetTab.querySelector("#block_height").value
-            );
-            const length = parseFloat(
-              magnetTab.querySelector("#block_length").value
-            );
-            const widthOD = parseFloat(
-              magnetTab.querySelector("#block_width_od").value
-            );
-            const widthID = parseFloat(
-              magnetTab.querySelector("#block_width_id").value
-            );
-            result = blockMagnet(remanence, height, length, widthOD, widthID);
-          } else if (activeTab === "ring") {
-            const remanence = parseFloat(
-              magnetTab.querySelector("#ring_remanence").value
-            );
-            const height = parseFloat(
-              magnetTab.querySelector("#ring_height").value
-            );
-            const od = parseFloat(magnetTab.querySelector("#ring_od").value);
-            const id = parseFloat(magnetTab.querySelector("#ring_id").value);
+          if (activeTab === 'block') {
+            const remanence = parseFloat(magnetTab.querySelector('#blockremanence').value) || 0;
+            const height = parseFloat(magnetTab.querySelector('#blockheight').value) || 0;
+            const length = parseFloat(magnetTab.querySelector('#blocklength').value) || 0;
+            const widthOD = parseFloat(magnetTab.querySelector('#blockwidthod').value) || 0;
+            const widthID = parseFloat(magnetTab.querySelector('#blockwidthid').value) || 0;
+            const blockParallelConstant = parseFloat(magnetTab.querySelector('#blockParallelConstant').value) || 0;
+            result = blockMagnet(remanence, height, length, widthOD, widthID, blockParallelConstant);
+          } else if (activeTab === 'ring') {
+            const remanence = parseFloat(magnetTab.querySelector('#ringremanence').value) || 0;
+            const height = parseFloat(magnetTab.querySelector('#ringheight').value) || 0;
+            const od = parseFloat(magnetTab.querySelector('#ringod').value) || 0;
+            const id = parseFloat(magnetTab.querySelector('#ringid').value) || 0;
             result = ringMagnet(remanence, height, od, id);
           }
-
-          const resultElement = magnetTab.querySelector("#result_value");
-          const errorElement = magnetTab.querySelector("#error");
-          const resultSection = magnetTab.querySelector(".result-category");
-
-          if (typeof result === "string") {
+          const resultElement = magnetTab.querySelector('#resultvalue');
+          const errorElement = magnetTab.querySelector('#error');
+          const resultSection = magnetTab.querySelector('.result-category');
+          if (typeof result === 'string') {
             errorElement.textContent = result;
-            errorElement.style.display = "block";
-            resultSection.style.display = "none";
+            errorElement.style.display = 'block';
+            resultSection.style.display = 'none';
           } else {
-            resultElement.textContent = isFinite(result)
-              ? result.toFixed(6)
-              : "NaN";
-            errorElement.style.display = "none";
-            resultSection.style.display = "block";
-            resultSection.classList.remove("pulse");
-            setTimeout(() => resultSection.classList.add("pulse"), 10);
+            resultElement.textContent = isFinite(result) ? result.toFixed(6) : 'NaN';
+            errorElement.style.display = 'none';
+            resultSection.style.display = 'block';
+            resultSection.classList.remove('pulse');
+            void resultSection.offsetWidth;
+            resultSection.classList.add('pulse');
           }
+          window.magnetResults = {
+            activeTab,
+            result,
+            inputs: {
+              block: {
+                remanence: parseFloat(magnetTab.querySelector('#blockremanence').value) || 0,
+                height: parseFloat(magnetTab.querySelector('#blockheight').value) || 0,
+                length: parseFloat(magnetTab.querySelector('#blocklength').value) || 0,
+                widthOD: parseFloat(magnetTab.querySelector('#blockwidthod').value) || 0,
+                widthID: parseFloat(magnetTab.querySelector('#blockwidthid').value) || 0,
+                blockParallelConstant: parseFloat(magnetTab.querySelector('#blockParallelConstant').value) || 0
+              },
+              ring: {
+                remanence: parseFloat(magnetTab.querySelector('#ringremanence').value) || 0,
+                height: parseFloat(magnetTab.querySelector('#ringheight').value) || 0,
+                od: parseFloat(magnetTab.querySelector('#ringod').value) || 0,
+                id: parseFloat(magnetTab.querySelector('#ringid').value) || 0
+              }
+            }
+          };
         } catch (error) {
-          magnetTab.querySelector("#error").textContent =
-            "Calculation error: " + error.message;
-          magnetTab.querySelector("#error").style.display = "block";
-          magnetTab.querySelector(".result-category").style.display = "none";
+          console.error('Magnet calculation error:', error);
+          magnetTab.querySelector('#error').textContent = 'Calculation error: ' + error.message;
+          magnetTab.querySelector('#error').style.display = 'block';
+          magnetTab.querySelector('.result-category').style.display = 'none';
         }
       }
 
-      magnetTab.querySelectorAll(".input-field").forEach((input) => {
-        input.addEventListener("input", function () {
-          if (this.value === "" || isNaN(this.value)) {
-            this.style.borderColor = "#e0e0e0";
-          } else if (parseFloat(this.value) < 0) {
-            this.style.borderColor = "#ff6b6b";
+      magnetTab.querySelectorAll('.input-field').forEach(input => {
+        input.addEventListener('input', function () {
+          this.classList.remove('invalid', 'valid');
+          if (this.value === '' || isNaN(this.value)) { } else if (parseFloat(this.value) <= 0) {
+            this.classList.add('invalid');
           } else {
-            this.style.borderColor = "#4ecdc4";
+            this.classList.add('valid');
           }
         });
       });
-
-      magnetTab.querySelectorAll(".magnet-tab-btn").forEach((btn) => {
-        btn.addEventListener("keydown", function (e) {
-          if (e.key === "Enter" || e.key === " ") {
-            switchTab(btn.getAttribute("data-tab"));
-          }
-        });
-      });
-
       calculateMagneticField();
     })();
+
+    // --- PDF Generation Functions ---
+    function showLoading() {
+      document.getElementById('loadingOverlay').style.display = 'flex';
+    }
+
+    function hideLoading() {
+      document.getElementById('loadingOverlay').style.display = 'none';
+    }
+
+    function showToast(message, isError = false) {
+      const toast = document.getElementById('toastNotification');
+      toast.textContent = message;
+      toast.classList.toggle('error', isError);
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // Helper Functions for PDF
+    function formatVal(val, unit = '') {
+      if (val == null || !isFinite(val)) return 'N/A';
+      const num = parseFloat(val);
+      if (unit === '%' || unit === 'kW') {
+        return `${num.toFixed(2)} ${unit}`;
+      } else {
+        return `${num.toFixed(4)} ${unit}`.trim();
+      }
+    }
+
+    function formatTraceWidth(mil) {
+      if (!isFinite(mil)) return 'N/A';
+      const mm = mil * 0.0254;
+      return `${mil.toFixed(2)} mil / ${mm.toFixed(3)} mm`;
+    }
+
+    // NEW: Combined PDF Generator
+    function generateCombinedPDF() {
+      if (!window.motorResults && !window.traceResults && !window.magnetResults) {
+        showToast('No calculation results available.', true);
+        return;
+      }
+
+      showLoading();
+      setTimeout(() => {
+        try {
+          const {
+            jsPDF
+          } = window.jspdf;
+          const doc = new jsPDF();
+
+          // Title
+          doc.setFontSize(20);
+          doc.text('PCB Calculator - Full Report', 105, 20, {
+            align: 'center'
+          });
+          doc.setFontSize(12);
+          doc.text(`Generated on: ${new Date().toLocaleString()}`, 105, 28, {
+            align: 'center'
+          });
+
+          let yPos = 40;
+
+          // === MOTOR REPORT ===
+          if (window.motorResults) {
+            doc.setFontSize(16);
+            doc.setFont('helvetica', 'bold');
+            doc.text('1. PCB Motor Calculator', 14, yPos);
+            yPos += 10;
+
+            const motorData = [
+              ['Parameter', 'Value'],
+              ['Number of PCB', formatVal(window.motorResults.numPCB)],
+              ['Stackup Height', formatVal(window.motorResults.stackupHeight, 'mm')],
+              ['Number of Stator Coil', formatVal(window.motorResults.numStatorCoil)],
+              ['Magnet Poles', formatVal(window.motorResults.magnetPoles)],
+              ['Surface Magnetic Value', formatVal(window.motorResults.surfaceMagneticValue, 'T')],
+              ['Voltage', formatVal(window.motorResults.voltage, 'V')],
+              ['Power In', formatVal(window.motorResults.powerIn, 'kW')],
+              ['Force', formatVal(window.motorResults.force, 'N')],
+              ['Torque', formatVal(window.motorResults.torque, 'Nm')],
+              ['RPM', formatVal(window.motorResults.rpm)],
+              ['Power Out', formatVal(window.motorResults.powerOut, 'kW')],
+              ['kV', formatVal(window.motorResults.kv, 'RPM/V')],
+              ['Copper Loss', formatVal(window.motorResults.copperLoss, 'W')],
+              ['Core Loss', formatVal(window.motorResults.coreLoss, 'W')],
+              ['Mechanical Loss', formatVal(window.motorResults.mechanicalLoss, 'W')],
+              ['Stray Loss', formatVal(window.motorResults.strayLoss, 'W')],
+              ['Total Loss', formatVal(window.motorResults.totalLoss, 'W')],
+              ['Actual Efficiency', formatVal(window.motorResults.actualEfficiency, '%')]
+            ];
+
+            doc.autoTable({
+              startY: yPos,
+              head: [motorData[0]],
+              body: motorData.slice(1),
+              theme: 'grid',
+              styles: {
+                fontSize: 10,
+                cellPadding: 2
+              },
+              headStyles: {
+                fillColor: [52, 152, 219]
+              },
+              margin: {
+                left: 14,
+                right: 14
+              }
+            });
+            yPos = doc.lastAutoTable.finalY + 15;
+          }
+
+          // === TRACE REPORT ===
+          if (window.traceResults && window.traceInputs) {
+            const mode = window.traceInputs.isWidthMode ? 'Width' :
+              window.traceInputs.isRiseMode ? 'Temp Rise' : 'Parameters';
+
+            doc.setFontSize(16);
+            doc.setFont('helvetica', 'bold');
+            doc.text(`2. Trace Width Calculator (${mode})`, 14, yPos);
+            yPos += 10;
+
+            let traceData = [
+              ['Layer', 'Metric', 'Value']
+            ];
+
+            const addRow = (layer, metric, value) => {
+              traceData.push([layer, metric, value]);
+            };
+
+            const internal = window.traceResults.internal || {};
+            const external = window.traceResults.external || {};
+
+            if (window.traceInputs.isWidthMode || window.traceInputs.isRiseMode) {
+              if (window.traceInputs.isWidthMode) {
+                addRow('Internal', 'Trace Width', formatTraceWidth(internal.width));
+                addRow('External', 'Trace Width', formatTraceWidth(external.width));
+              } else {
+                addRow('Internal', 'Temp Rise', formatVal(internal.rise, '°C'));
+                addRow('External', 'Temp Rise', formatVal(external.rise, '°C'));
+              }
+              addRow('Internal', 'Resistance', formatVal(internal.resistance, 'Ω'));
+              addRow('Internal', 'Voltage Drop', formatVal(internal.voltageDrop, 'V'));
+              addRow('Internal', 'Power Loss', formatVal(internal.powerLoss, 'W'));
+              addRow('External', 'Resistance', formatVal(external.resistance, 'Ω'));
+              addRow('External', 'Voltage Drop', formatVal(external.voltageDrop, 'V'));
+              addRow('External', 'Power Loss', formatVal(external.powerLoss, 'W'));
+            } else if (window.traceInputs.isParametersMode) {
+              addRow('Internal', 'Area (mm²)', formatVal(internal.area?.mm2));
+              addRow('Internal', 'Volume (mm³)', formatVal(internal.volume?.mm3));
+              addRow('Internal', 'Resistance', formatVal(internal.resistance, 'Ω'));
+              addRow('Internal', 'Power Loss', formatVal(internal.powerLoss, 'W'));
+              addRow('External', 'Area (mm²)', formatVal(external.area?.mm2));
+              addRow('External', 'Volume (mm³)', formatVal(external.volume?.mm3));
+              addRow('External', 'Resistance', formatVal(external.resistance, 'Ω'));
+              addRow('External', 'Power Loss', formatVal(external.powerLoss, 'W'));
+            }
+
+            doc.autoTable({
+              startY: yPos,
+              head: [traceData[0]],
+              body: traceData.slice(1),
+              theme: 'grid',
+              styles: {
+                fontSize: 9,
+                cellPadding: 2
+              },
+              headStyles: {
+                fillColor: [52, 152, 219]
+              },
+              margin: {
+                left: 14,
+                right: 14
+              },
+              columnStyles: {
+                0: {
+                  cellWidth: 30
+                },
+                1: {
+                  cellWidth: 60
+                },
+                2: {
+                  cellWidth: 80
+                }
+              }
+            });
+            yPos = doc.lastAutoTable.finalY + 15;
+          }
+
+          // === MAGNET REPORT ===
+          if (window.magnetResults && typeof window.magnetResults.result === 'number') {
+            doc.setFontSize(16);
+            doc.setFont('helvetica', 'bold');
+            doc.text('3. Magnet Calculator', 14, yPos);
+            yPos += 10;
+
+            const type = window.magnetResults.activeTab === 'block' ? 'Block' : 'Ring';
+            const inputs = window.magnetResults.inputs[window.magnetResults.activeTab];
+            let magnetData = [
+              ['Parameter', 'Value']
+            ];
+
+            if (type === 'Block') {
+              magnetData.push(
+                ['Type', 'Block Magnet'],
+                ['Remanence Br', formatVal(inputs.remanence, 'T')],
+                ['Height H', formatVal(inputs.height, 'mm')],
+                ['Length L', formatVal(inputs.length, 'mm')],
+                ['Width OD', formatVal(inputs.widthOD, 'mm')],
+                ['Width ID', formatVal(inputs.widthID, 'mm')],
+                ['Parallel Stacking Constant', formatVal(inputs.blockParallelConstant)]
+              );
+            } else {
+              magnetData.push(
+                ['Type', 'Ring Magnet'],
+                ['Remanence Br', formatVal(inputs.remanence, 'T')],
+                ['Height H', formatVal(inputs.height, 'mm')],
+                ['Outer Diameter', formatVal(inputs.od, 'mm')],
+                ['Inner Diameter', formatVal(inputs.id, 'mm')]
+              );
+            }
+            magnetData.push(['Surface Magnetic Value', formatVal(window.magnetResults.result, 'T')]);
+
+            doc.autoTable({
+              startY: yPos,
+              head: [magnetData[0]],
+              body: magnetData.slice(1),
+              theme: 'grid',
+              styles: {
+                fontSize: 10,
+                cellPadding: 2
+              },
+              headStyles: {
+                fillColor: [52, 152, 219]
+              },
+              margin: {
+                left: 14,
+                right: 14
+              }
+            });
+            yPos = doc.lastAutoTable.finalY + 15;
+          }
+
+          // Footer
+          const pageCount = doc.getNumberOfPages();
+          for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            doc.setFontSize(9);
+            doc.setTextColor(120);
+            doc.text(`Page ${i} of ${pageCount}`, 105, 290, {
+              align: 'center'
+            });
+            doc.text('AirBuddy Aerospace - PCB Calculator', 105, 295, {
+              align: 'center'
+            });
+            doc.setTextColor(0);
+          }
+
+          doc.save('PCB_Full_Calculator_Report.pdf');
+          showToast('Full PDF report generated successfully!');
+        } catch (error) {
+          console.error('Combined PDF Error:', error);
+          showToast('Error generating full report: ' + (error.message || 'Unknown'), true);
+        } finally {
+          hideLoading();
+        }
+      }, 100);
+    }
+
+    // Attach event listener to the new global download button
+    document.getElementById('downloadFullReport').addEventListener('click', generateCombinedPDF);
   </script>
 </body>
 

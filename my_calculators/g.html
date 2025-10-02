@@ -951,7 +951,7 @@
                     <div class="input-group">
                         <label for="tracelengthinput">Trace Length</label>
                         <div class="input-row">
-                            <input type="number" id="tracelengthinput" step="0.1" value="12">
+                            <input type="number" id="tracelengthinput" step="0.1" value="29670.8">
                             <select id="tracetraceUnit">
                                 <option value="mm">mm</option>
                             </select>
@@ -1326,38 +1326,13 @@
                             el.dispatchEvent(new Event('input', { bubbles: true }));
                         }
                     }
-                    if (mr.traceLengthRadial !== null && isFinite(mr.traceLengthRadial)) {
+                     if (mr.traceLengthRadial !== null && isFinite(mr.traceLengthRadial)) {
                         const el = document.getElementById('blocklength');
                         if (el && parseFloat(el.value) !== mr.traceLengthRadial) {
                             el.value = mr.traceLengthRadial.toFixed(4);
                             el.dispatchEvent(new Event('input', { bubbles: true }));
                         }
                     }
-                    //  Remanence Br
-                    if (mr.remanence !== null && isFinite(mr.remanence)) {
-                        const el = document.getElementById('blockremanence');
-                        if (el && parseFloat(el.value) !== mr.remanence) {
-                            el.value = mr.remanence.toFixed(4);
-                            el.dispatchEvent(new Event('input', { bubbles: true }));
-                        }
-                    }
-                    // Height H
-                    if (mr.pmRotorHeight !== null && isFinite(mr.pmRotorHeight)) {
-                        const el = document.getElementById('blockheight');
-                        if (el && parseFloat(el.value) !== mr.pmRotorHeight) {
-                            el.value = mr.pmRotorHeight.toFixed(4);
-                            el.dispatchEvent(new Event('input', { bubbles: true }));
-                        }
-                    }
-                    // Parallel Stacking Constant
-                    if (mr.parallelConstant !== null && isFinite(mr.parallelConstant)) {
-                        const el = document.getElementById('blockParallelConstant');
-                        if (el && parseFloat(el.value) !== mr.parallelConstant) {
-                            el.value = mr.parallelConstant.toFixed(4);
-                            el.dispatchEvent(new Event('input', { bubbles: true }));
-                        }
-                    }
-
 
                     // Sync Parameters
                     const motorPsc = document.getElementById('motorParallelConstant').value;
@@ -1366,7 +1341,7 @@
                         magnetPsc.value = motorPsc;
                         magnetPsc.dispatchEvent(new Event('input', { bubbles: true }));
                     }
-
+                    
                     const motorHeight = document.getElementById('pmRotorHeight').value;
                     const magnetHeight = document.getElementById('blockheight');
                     if (magnetHeight && motorHeight !== undefined && magnetHeight.value !== motorHeight) {
@@ -1435,7 +1410,7 @@
 
         // --- PCB Motor Calculator Script ---
         document.addEventListener('DOMContentLoaded', function () {
-            function getSafeNumber(id, defaultValue) {
+            function getSafeNumber(id, defaultValue = 0) {
                 const element = document.getElementById(id);
                 if (!element) return defaultValue;
                 const value = parseFloat(element.value);
@@ -1716,12 +1691,13 @@
                             results.lengthIDtoOD = results.traceLengthRadial;
                             changed = true;
                         }
-                        if (results.surfaceMagneticValue === null && results.widthOD !== null && results.widthID !== null && results.lengthIDtoOD !== null && results.height !== null) {
+                        if (results.surfaceMagneticValue === null && results.widthOD > 0 && results.widthID > 0 && results.height > 0 && results.lengthIDtoOD > 0) {
                             try {
-
-                                const sqrtTerm = Math.sqrt(results.lengthIDtoOD ** 2 + ((results.widthID + results.lengthIDtoOD) / 2) ** 2 + 4 * results.height ** 2);
-                                const arctanArgument = (2 * results.height * sqrtTerm) / (results.widthOD * ((results.widthID + results.lengthIDtoOD) / 2));
-
+                                const avgW = (results.widthID + results.widthOD) / 2;
+                                const L = results.lengthIDtoOD;
+                                const H = results.height;
+                                const sqrtTerm = Math.sqrt(L**2 + avgW**2 + 4 * H**2);
+                                const arctanArgument = (2 * H * sqrtTerm) / (L * avgW);
                                 results.surfaceMagneticValue = (remanence / Math.PI) * Math.atan(arctanArgument) * results.motorParallelConstant;
                             } catch (e) {
                                 results.surfaceMagneticValue = 0;
@@ -1898,6 +1874,10 @@
                         name: 'Current Conducting Radial Length',
                         value: results.currentConductingRadial,
                         unit: 'mm'
+                    }, {
+                        name: 'Parallel Stacking Constant',
+                        value: results.motorParallelConstant,
+                        unit: ''
                     }]
                 }, {
                     title: 'Electrical Parameters',
@@ -1953,15 +1933,7 @@
                         name: 'Length (L) from ID to OD',
                         value: results.lengthIDtoOD,
                         unit: 'mm'
-                    },
-                    {
-                        name: 'Parallel Stacking Constant',
-                        value: results.motorParallelConstant,
-                        unit: ''
-                    },
-
-
-                    {
+                    }, {
                         name: 'Force',
                         value: results.force,
                         unit: 'N'
@@ -2203,8 +2175,7 @@
                 else if (inputs.widthUnitInternal === 'm') widthInternal = umToMil(widthInternal);
                 if (inputs.widthUnitExternal === 'mm') widthExternal = mmToMil(widthExternal);
                 else if (inputs.widthUnitExternal === 'm') widthExternal = umToMil(widthExternal);
-                return {
-                    ...inputs,
+                return { ...inputs,
                     thickness,
                     length,
                     rise,
@@ -2557,7 +2528,7 @@
             magnetTab.querySelectorAll('.input-field').forEach(input => {
                 input.addEventListener('input', function () {
                     this.classList.remove('invalid', 'valid');
-                    if (this.value === '' || isNaN(this.value)) { } else if (parseFloat(this.value) <= 0) {
+                    if (this.value === '' || isNaN(this.value)) {} else if (parseFloat(this.value) <= 0) {
                         this.classList.add('invalid');
                     } else {
                         this.classList.add('valid');
