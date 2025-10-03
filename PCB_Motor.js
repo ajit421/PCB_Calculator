@@ -394,30 +394,24 @@ function performMotorCalculations(inputs) {
     // Surface Magnetic Value Calculation
     if (
       results.surfaceMagneticValue === null &&
-      results.widthOD !== null &&
-      results.widthID !== null &&
+      results.remanence !== null &&
       results.lengthIDtoOD !== null &&
-      results.height !== null
+      results.widthOD > 0 &&
+      results.widthID > 0 &&
+      results.height > 0
     ) {
       try {
-        const sqrtTerm = Math.sqrt(
-          Math.pow(results.lengthIDtoOD, 2) +
-            Math.pow((results.widthID + results.lengthIDtoOD) / 2, 2) +
-            4 * Math.pow(results.height, 2)
-        );
-        const arctanArgument =
-          (2 * results.height * sqrtTerm) /
-          (results.widthOD * ((results.widthID + results.lengthIDtoOD) / 2));
-
-        results.surfaceMagneticValue =
-          (inputs.remanence / Math.PI) *
-          Math.atan(arctanArgument) *
-          results.motorParallelConstant;
+        const avgW = (results.widthID + results.lengthIDtoOD) / 2;
+        const H = results.height;
+        const sqrtTerm = Math.sqrt( (results.widthOD ** 2 )+ ((avgW ** 2) + 4 * H ** 2 ));
+        const arctanArgument = (2 * H * sqrtTerm) / (results.widthOD * avgW);
+        results.surfaceMagneticValue = (inputs.remanence / Math.PI) * Math.atan(arctanArgument) * results.motorParallelConstant;
       } catch (e) {
         results.surfaceMagneticValue = 0;
       }
-      changed = true;
+      changed = true; 
     }
+       
 
     // Electrical Calculations
     if (results.voltage === null) {
