@@ -19,8 +19,8 @@ function calculateMagneticField() {
     };
 
     // instant synchronization
-    if (typeof instantSync === "function") {
-      setTimeout(instantSync, 10);
+    if (typeof perfectSync === "function") {
+      perfectSync();
     }
   } catch (error) {
     console.error("Magnet calculation error:", error);

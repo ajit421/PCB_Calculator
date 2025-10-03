@@ -77,8 +77,8 @@
     window.traceInputs = inputs;
 
     // instant synchronization
-    if (typeof instantSync === "function") {
-      setTimeout(instantSync, 10);
+    if (typeof perfectSync === "function") {
+      perfectSync();
     }
   }
 
@@ -355,6 +355,14 @@
     const format = (val, prec = 11) =>
       val !== null && isFinite(val) ? Number(val).toFixed(prec) : "Error";
 
+    // Helper to safely update input field without triggering infinite loop
+    const updateInputValue = (id, value) => {
+      const input = document.querySelector(`#trace #${id}`);
+      if (input && parseFloat(input.value) !== parseFloat(value)) {
+        input.value = value;
+      }
+    };
+
     if (data.isWidthMode && result) {
       updateElement(
         "#internalWidth",
@@ -386,6 +394,9 @@
         format(result.external.voltageDrop) + " V"
       );
       updateElement("#externalPower", format(result.external.powerLoss) + " W");
+      updateInputValue("tracewidthinternal", milToMm(result.internal.width).toFixed(8));
+      updateInputValue("tracewidthexternal", milToMm(result.external.width).toFixed(8));
+
     } else if (data.isRiseMode && result) {
       updateElement(
         "#internalRise",

@@ -67,6 +67,71 @@ function addMotorSection(doc, yPos) {
   doc.text("1. PCB Motor Calculator", 14, yPos);
   yPos += 10;
 
+  // Input Parameters
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.text("Input Parameters", 14, yPos);
+  yPos += 8;
+
+  const motorInputs = [
+    ["Parameter", "Value"],
+    ["PCB Stator OD", formatVal(getSafeNumber("pcbStatorOD"), "mm")],
+    ["PCB Stator ID", formatVal(getSafeNumber("pcbStatorID"), "mm")],
+    [
+      "PCB Board Thickness",
+      formatVal(getSafeNumber("pcbBoardThickness"), "mm"),
+    ],
+    ["Trace Width ID", formatVal(getSafeNumber("traceWidthID"), "mm")],
+    ["Trace Gap", formatVal(getSafeNumber("traceGap"), "mm")],
+    ["PCB Layer Oz/Ft²", formatVal(getSafeNumber("pcbLayerOz"))],
+    ["Number of PCB Layers", formatVal(getSafeNumber("numPCBLayers"))],
+    ["PCB Layers in Series", formatVal(getSafeNumber("numPCBLayersseries"))],
+    [
+      "PCB Layers in Parallel",
+      formatVal(getSafeNumber("numPCBLayersParallel")),
+    ],
+    ["PM Rotor Height", formatVal(getSafeNumber("pmRotorHeight"), "mm")],
+    ["Air Gap", formatVal(getSafeNumber("airGap"), "mm")],
+    ["Remanence Br", formatVal(getSafeNumber("remanence"), "T")],
+    ["Current", formatVal(getSafeNumber("current"), "A")],
+    ["Number of Cells", formatVal(getSafeNumber("numCells"))],
+    ["Cell Charge Unit", formatVal(getSafeNumber("cellChargeUnit"), "V")],
+    [
+      "Parallel Stacking Constant",
+      formatVal(getSafeNumber("motorParallelConstant")),
+    ],
+  ];
+
+  doc.autoTable({
+    startY: yPos,
+    head: [motorInputs[0]],
+    body: motorInputs.slice(1),
+    theme: "grid",
+    styles: {
+      fontSize: 9,
+      cellPadding: 3,
+      lineColor: [200, 200, 200],
+      lineWidth: 0.1,
+    },
+    headStyles: {
+      fillColor: [52, 152, 219],
+      textColor: [255, 255, 255],
+      fontStyle: "bold",
+    },
+    alternateRowStyles: {
+      fillColor: [245, 245, 245],
+    },
+    margin: { left: 14, right: 14 },
+  });
+
+  yPos = doc.lastAutoTable.finalY + 10;
+
+  // Output Parameters
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.text("Output Results", 14, yPos);
+  yPos += 8;
+
   const motorData = [
     ["Parameter", "Value"],
     ["Number of PCB", formatVal(window.motorResults.numPCB)],
@@ -129,6 +194,131 @@ function addTraceSection(doc, yPos) {
   doc.setTextColor(40, 40, 40);
   doc.text(`2. Trace Width Calculator (${mode})`, 14, yPos);
   yPos += 10;
+
+  // Input Parameters
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.text("Input Parameters", 14, yPos);
+  yPos += 8;
+
+  let traceInputData = [["Parameter", "Value"]];
+
+  // Common inputs for all modes
+  traceInputData.push(
+    ["Current", formatVal(window.traceInputs.current, "A")],
+    [
+      "Ambient Temperature",
+      formatVal(
+        window.traceInputs.ambient,
+        window.traceInputs.ambientUnit === "C" ? "°C" : "°F"
+      ),
+    ]
+  );
+
+  // Mode-specific inputs
+  if (window.traceInputs.isWidthMode) {
+    traceInputData.push(
+      [
+        "Temperature Rise",
+        formatVal(
+          window.traceInputs.rise,
+          window.traceInputs.riseUnit === "C" ? "°C" : "°F"
+        ),
+      ],
+      [
+        "Trace Length",
+        formatVal(window.traceInputs.length, window.traceInputs.lengthUnit),
+      ],
+      [
+        "Copper Thickness",
+        formatVal(
+          window.traceInputs.thickness,
+          window.traceInputs.thicknessUnit
+        ),
+      ]
+    );
+  } else if (window.traceInputs.isRiseMode) {
+    traceInputData.push(
+      [
+        "Internal Trace Width",
+        formatVal(milToMm(window.traceInputs.widthInternal), "mm"),
+      ],
+      [
+        "External Trace Width",
+        formatVal(milToMm(window.traceInputs.widthExternal), "mm"),
+      ],
+      [
+        "Trace Length",
+        formatVal(window.traceInputs.length, window.traceInputs.lengthUnit),
+      ],
+      [
+        "Copper Thickness",
+        formatVal(
+          window.traceInputs.thickness,
+          window.traceInputs.thicknessUnit
+        ),
+      ]
+    );
+  } else if (window.traceInputs.isParametersMode) {
+    traceInputData.push(
+      [
+        "Temperature Rise",
+        formatVal(
+          window.traceInputs.parametersRise,
+          window.traceInputs.parametersRiseUnit === "C" ? "°C" : "°F"
+        ),
+      ],
+      [
+        "Internal Trace Width",
+        formatVal(milToMm(window.traceInputs.widthInternal), "mm"),
+      ],
+      [
+        "External Trace Width",
+        formatVal(milToMm(window.traceInputs.widthExternal), "mm"),
+      ],
+      [
+        "Trace Length",
+        formatVal(window.traceInputs.length, window.traceInputs.lengthUnit),
+      ],
+      [
+        "Copper Thickness",
+        formatVal(
+          window.traceInputs.thickness,
+          window.traceInputs.thicknessUnit
+        ),
+      ]
+    );
+  }
+
+  doc.autoTable({
+    startY: yPos,
+    head: [traceInputData[0]],
+    body: traceInputData.slice(1),
+    theme: "grid",
+    styles: {
+      fontSize: 9,
+      cellPadding: 3,
+      lineColor: [200, 200, 200],
+      lineWidth: 0.1,
+    },
+    headStyles: {
+      fillColor: [52, 152, 219],
+      textColor: [255, 255, 255],
+      fontStyle: "bold",
+    },
+    alternateRowStyles: {
+      fillColor: [245, 245, 245],
+    },
+    margin: { left: 14, right: 14 },
+  });
+
+  yPos = doc.lastAutoTable.finalY + 10;
+
+  // Output Parameters
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.text("Output Results", 14, yPos);
+  yPos += 8;
 
   let traceData = [["Layer", "Metric", "Value"]];
   const internal = window.traceResults.internal || {};
@@ -208,43 +398,68 @@ function addMagnetSection(doc, yPos) {
   doc.text("3. Magnet Calculator", 14, yPos);
   yPos += 10;
 
+  // Input Parameters
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.text("Input Parameters", 14, yPos);
+  yPos += 8;
+
   const type = window.magnetResults.activeTab === "block" ? "Block" : "Ring";
+  const inputs = window.magnetResults.inputs || {};
 
-  // SAFE ACCESS: Check if inputs exist before accessing
-  const inputs = window.magnetResults.inputs
-    ? window.magnetResults.inputs[window.magnetResults.activeTab]
-    : null;
+  let magnetInputData = [["Parameter", "Value"]];
 
-  let magnetData = [["Parameter", "Value"]];
-
-  if (inputs) {
-    if (type === "Block") {
-      magnetData.push(
-        ["Type", "Block Magnet"],
-        ["Remanence Br", formatVal(inputs.remanence, "T")],
-        ["Height H", formatVal(inputs.height, "mm")],
-        ["Length L", formatVal(inputs.length, "mm")],
-        ["Width OD", formatVal(inputs.widthOD, "mm")],
-        ["Width ID", formatVal(inputs.widthID, "mm")],
-        ["Parallel Stacking Constant", formatVal(inputs.blockParallelConstant)]
-      );
-    } else {
-      magnetData.push(
-        ["Type", "Ring Magnet"],
-        ["Remanence Br", formatVal(inputs.remanence, "T")],
-        ["Height H", formatVal(inputs.height, "mm")],
-        ["Outer Diameter", formatVal(inputs.od, "mm")],
-        ["Inner Diameter", formatVal(inputs.id, "mm")]
-      );
-    }
+  if (type === "Block") {
+    magnetInputData.push(
+      ["Type", "Block Magnet"],
+      ["Remanence Br", formatVal(inputs.remanence, "T")],
+      ["Height H", formatVal(inputs.height, "mm")],
+      ["Length L", formatVal(inputs.length, "mm")],
+      ["Width OD", formatVal(inputs.widthOD, "mm")],
+      ["Width ID", formatVal(inputs.widthID, "mm")],
+      ["Parallel Stacking Constant", formatVal(inputs.blockParallelConstant)]
+    );
   } else {
-    // Fallback if inputs are not available
-    magnetData.push(
-      ["Type", `${type} Magnet`],
-      ["Note", "Input parameters not available"]
+    magnetInputData.push(
+      ["Type", "Ring Magnet"],
+      ["Remanence Br", formatVal(inputs.remanence, "T")],
+      ["Height H", formatVal(inputs.height, "mm")],
+      ["Outer Diameter", formatVal(inputs.od, "mm")],
+      ["Inner Diameter", formatVal(inputs.id, "mm")]
     );
   }
 
+  doc.autoTable({
+    startY: yPos,
+    head: [magnetInputData[0]],
+    body: magnetInputData.slice(1),
+    theme: "grid",
+    styles: {
+      fontSize: 9,
+      cellPadding: 3,
+      lineColor: [200, 200, 200],
+      lineWidth: 0.1,
+    },
+    headStyles: {
+      fillColor: [52, 152, 219],
+      textColor: [255, 255, 255],
+      fontStyle: "bold",
+    },
+    alternateRowStyles: {
+      fillColor: [245, 245, 245],
+    },
+    margin: { left: 14, right: 14 },
+  });
+
+  yPos = doc.lastAutoTable.finalY + 10;
+
+  // Output Parameters
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.text("Output Results", 14, yPos);
+  yPos += 8;
+
+  let magnetData = [["Parameter", "Value"]];
   magnetData.push([
     "Surface Magnetic Value",
     formatVal(window.magnetResults.result, "T"),
@@ -304,4 +519,19 @@ function formatTraceWidth(mil) {
   if (!isFinite(mil)) return "N/A";
   const mm = mil * 0.0254;
   return `${mil.toFixed(2)} mil / ${mm.toFixed(3)} mm`;
+}
+
+// Helper functions (assuming they exist in main.js)
+function getSafeNumber(id) {
+  const element = document.getElementById(id);
+  if (!element) {
+    return 0;
+  }
+  const value = parseFloat(element.value);
+  return isNaN(value) ? 0 : value;
+}
+
+function milToMm(mil) {
+  if (isNaN(mil)) return 0;
+  return mil * 0.0254;
 }

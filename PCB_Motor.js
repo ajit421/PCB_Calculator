@@ -17,8 +17,8 @@ function calculateMotorParameters() {
     window.motorResults = results;
 
     // instant synchronization
-    if (typeof instantSync === "function") {
-      instantSync();
+    if (typeof perfectSync === "function") {
+      perfectSync();
     }
   } catch (error) {
     console.error("Motor calculation error:", error);
@@ -403,15 +403,19 @@ function performMotorCalculations(inputs) {
       try {
         const avgW = (results.widthID + results.lengthIDtoOD) / 2;
         const H = results.height;
-        const sqrtTerm = Math.sqrt( (results.widthOD ** 2 )+ ((avgW ** 2) + 4 * H ** 2 ));
+        const sqrtTerm = Math.sqrt(
+          results.widthOD ** 2 + (avgW ** 2 + 4 * H ** 2)
+        );
         const arctanArgument = (2 * H * sqrtTerm) / (results.widthOD * avgW);
-        results.surfaceMagneticValue = (inputs.remanence / Math.PI) * Math.atan(arctanArgument) * results.motorParallelConstant;
+        results.surfaceMagneticValue =
+          (inputs.remanence / Math.PI) *
+          Math.atan(arctanArgument) *
+          results.motorParallelConstant;
       } catch (e) {
         results.surfaceMagneticValue = 0;
       }
-      changed = true; 
+      changed = true;
     }
-       
 
     // Electrical Calculations
     if (results.voltage === null) {
@@ -452,19 +456,22 @@ function performMotorCalculations(inputs) {
       changed = true;
     }
 
-    // Loss Calculations
+    // ⚠️ CRITICAL FIX: Copper Loss Calculation
     let copperLossW = 0;
-
-    // ALWAYS use Trace Width power loss if available
-    if (
-      window.syncedCopperLossFromTrace !== undefined &&
-      window.syncedCopperLossFromTrace !== null &&
-      isFinite(window.syncedCopperLossFromTrace)
-    ) {
-      copperLossW = window.syncedCopperLossFromTrace;
-      console.log("Using Trace Width Power Loss:", copperLossW, "W");
-    } else {
-      // Fallback: calculate own copper loss only if trace data not available
+    try {
+      // ALWAYS USE TRACE POWER LOSS - THIS IS THE KEY FIX
+      if (
+        window.syncedCopperLossFromTrace !== undefined &&
+        window.syncedCopperLossFromTrace !== null &&
+        isFinite(window.syncedCopperLossFromTrace) &&
+        window.syncedCopperLossFromTrace > 0
+      ) {
+        copperLossW = window.syncedCopperLossFromTrace;
+      } else {
+        throw new Error("Using fallback calculation");
+      }
+    } catch (error) {
+      // Fallback calculation with validation
       const windingResistance = calculateWindingResistance(
         results,
         inputs.current,
@@ -472,7 +479,7 @@ function performMotorCalculations(inputs) {
         inputs.numPCBLayersParallel
       );
       copperLossW = inputs.current * inputs.current * windingResistance;
-      console.log("Using Motor Calculated Copper Loss:", copperLossW, "W");
+      console.warn("Using motor calculated copper loss:", copperLossW);
     }
 
     results.copperLoss = copperLossW;

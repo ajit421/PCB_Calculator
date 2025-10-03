@@ -153,7 +153,7 @@ function showToast(message, isError = false) {
 }
 
 // ✅ FIXED: Added = operator for default parameter
-function getSafeNumber(id, defaultValue ) {
+function getSafeNumber(id, defaultValue) {
   const element = document.getElementById(id);
   if (!element) {
     console.warn(`Element with id '${id}' not found`);
@@ -198,9 +198,20 @@ function fToC(f) {
 }
 
 // Additional utility functions
-function formatNumber(value, decimals = 4) {
+function formatNumber(value, decimals = 6) {
   if (value === null || value === undefined || isNaN(value)) return "N/A";
   return Number(value).toFixed(decimals);
+}
+
+// Add to main.js
+function validateInput(element, min = 0, max = Infinity) {
+    const value = parseFloat(element.value);
+    if (isNaN(value) || value < min || value > max) {
+        element.style.borderColor = "#e74c3c";
+        return false;
+    }
+    element.style.borderColor = "#27ae60";
+    return true;
 }
 
 function validateNumber(value, min = 0, max = Infinity) {

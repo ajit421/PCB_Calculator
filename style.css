@@ -771,3 +771,26 @@ body.dark-mode .group-title {
   background-color: rgba(231, 76, 60, 0.1);
   border-radius: 5px;
 }
+
+/* Add to style.css */
+@media (max-width: 768px) {
+  .calculator-container {
+    grid-template-columns: 1fr;
+    margin: 10px;
+  }
+
+  header {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  nav {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .tab-link {
+    padding: 10px 15px;
+    font-size: 0.9em;
+  }
+}
