@@ -164,29 +164,22 @@ function performMotorCalculations(inputs) {
 
     // PCB Dimensions calculations
     if (results.statorIDCircumference === null) {
-      results.statorIDCircumference =
-        (inputs.pcbStatorID + inputs.traceGap) * Math.PI;
+      results.statorIDCircumference = (inputs.pcbStatorID + inputs.traceGap) * Math.PI;
       changed = true;
     }
 
     if (results.numLines === null && results.statorIDCircumference !== null) {
-      results.numLines = Math.ceil(
-        results.statorIDCircumference / (inputs.traceWidthID + inputs.traceGap)
-      );
+      results.numLines = Math.ceil( results.statorIDCircumference / (inputs.traceWidthID + inputs.traceGap) );
       results.numLines = Math.ceil(results.numLines / 6) * 6;
       changed = true;
     }
 
     if (results.traceCircumferenceID === null && results.numLines !== null) {
-      results.traceCircumferenceID =
-        results.numLines * (inputs.traceWidthID + inputs.traceGap);
+      results.traceCircumferenceID = results.numLines * (inputs.traceWidthID + inputs.traceGap);
       changed = true;
     }
 
-    if (
-      results.traceRadiusID === null &&
-      results.traceCircumferenceID !== null
-    ) {
+    if ( results.traceRadiusID === null && results.traceCircumferenceID !== null) {
       results.traceRadiusID = results.traceCircumferenceID / (2 * Math.PI);
       changed = true;
     }
@@ -211,53 +204,35 @@ function performMotorCalculations(inputs) {
       changed = true;
     }
 
-    if (
-      results.traceCircumferenceOD === null &&
-      results.traceRadiusOD !== null
-    ) {
+    if ( results.traceCircumferenceOD === null && results.traceRadiusOD !== null ) {
       results.traceCircumferenceOD = 2 * Math.PI * results.traceRadiusOD;
       changed = true;
     }
 
-    if (
-      results.traceWidthOD === null &&
-      results.traceCircumferenceOD !== null
-    ) {
-      results.traceWidthOD =
-        results.traceCircumferenceOD / results.numLines - inputs.traceGap;
+    if ( results.traceWidthOD === null && results.traceCircumferenceOD !== null ) {
+      results.traceWidthOD = results.traceCircumferenceOD / results.numLines - inputs.traceGap;
       changed = true;
     }
 
-    if (
-      results.traceLengthRadial === null &&
-      results.traceRadiusOD !== null &&
-      results.traceRadiusID !== null
-    ) {
+    if ( results.traceLengthRadial === null && results.traceRadiusOD !== null && results.traceRadiusID !== null ) {
       results.traceLengthRadial = results.traceRadiusOD - results.traceRadiusID;
       changed = true;
     }
 
     if (
-      results.currentConductingRadial === null &&
-      results.traceLengthRadial !== null
+      results.currentConductingRadial === null && results.traceLengthRadial !== null
     ) {
-      results.currentConductingRadial =
-        results.traceLengthRadial - inputs.traceGap / 2;
+      results.currentConductingRadial = results.traceLengthRadial - inputs.traceGap / 2;
       changed = true;
     }
 
     if (results.numPCB === null) {
-      results.numPCB =
-        (inputs.numPCBLayersseries / inputs.numPCBLayers) *
-        inputs.numPCBLayersParallel;
+      results.numPCB = (inputs.numPCBLayersseries / inputs.numPCBLayers) * inputs.numPCBLayersParallel;
       changed = true;
     }
 
     if (results.stackupHeight === null && results.numPCB !== null) {
-      results.stackupHeight =
-        results.numPCB * inputs.pcbBoardThickness +
-        (results.numPCB + 1) * inputs.pmRotorHeight +
-        results.numPCB * inputs.airGap;
+      results.stackupHeight = results.numPCB * inputs.pcbBoardThickness + (results.numPCB + 1) * inputs.pmRotorHeight + results.numPCB * inputs.airGap;
       changed = true;
     }
 
@@ -267,16 +242,14 @@ function performMotorCalculations(inputs) {
     }
 
     if (
-      results.numLinesPerPhase180 === null &&
-      results.numLinesPerPhase !== null
+      results.numLinesPerPhase180 === null && results.numLinesPerPhase !== null
     ) {
       results.numLinesPerPhase180 = results.numLinesPerPhase / 2;
       changed = true;
     }
 
     if (
-      results.coilPerPhase180 === null &&
-      results.numLinesPerPhase180 !== null
+      results.coilPerPhase180 === null && results.numLinesPerPhase180 !== null
     ) {
       results.coilPerPhase180 = Math.max(0, results.numLinesPerPhase180 - 1);
       changed = true;
@@ -297,26 +270,18 @@ function performMotorCalculations(inputs) {
       changed = true;
     }
 
-    if (
-      results.totalConductorLength === null &&
-      results.currentConductingRadial !== null
-    ) {
-      results.totalConductorLength =
-        (results.currentConductingRadial * results.numLines) / 1000;
+    if ( results.totalConductorLength === null && results.currentConductingRadial !== null) {
+      results.totalConductorLength = (results.currentConductingRadial * results.numLines) / 1000;
       changed = true;
     }
 
-    if (
-      results.onConductorLength === null &&
-      results.totalConductorLength !== null
-    ) {
+    if (results.onConductorLength === null && results.totalConductorLength !== null ) {
       results.onConductorLength = (results.totalConductorLength / 3) * 2;
       changed = true;
     }
 
     if (results.all3Phase === null && results.totalConductorLength !== null) {
-      results.all3Phase =
-        results.totalConductorLength * inputs.numPCBLayersseries;
+      results.all3Phase = results.totalConductorLength * inputs.numPCBLayersseries;
       changed = true;
     }
 
@@ -336,8 +301,7 @@ function performMotorCalculations(inputs) {
     }
 
     if (results.reqCopperThickness === null) {
-      results.reqCopperThickness =
-        inputs.pcbLayerOz * inputs.numPCBLayersParallel;
+      results.reqCopperThickness = inputs.pcbLayerOz * inputs.numPCBLayersParallel;
       changed = true;
     }
 
@@ -347,17 +311,12 @@ function performMotorCalculations(inputs) {
     }
 
     if (results.radiusOD === null && results.nonMagnetArea !== null) {
-      results.radiusOD =
-        results.nonMagnetArea + results.currentConductingRadial;
+      results.radiusOD = results.nonMagnetArea + results.currentConductingRadial;
       changed = true;
     }
 
-    if (
-      results.avgTorqueRadius === null &&
-      results.currentConductingRadial !== null
-    ) {
-      results.avgTorqueRadius =
-        results.currentConductingRadial / 2 + results.nonMagnetArea;
+    if (results.avgTorqueRadius === null && results.currentConductingRadial !== null && results.nonMagnetArea !== null) {
+      results.avgTorqueRadius = (results.currentConductingRadial / 2) + results.nonMagnetArea;
       changed = true;
     }
 
@@ -366,23 +325,13 @@ function performMotorCalculations(inputs) {
       changed = true;
     }
 
-    if (
-      results.widthOD === null &&
-      results.traceCircumferenceOD !== null &&
-      results.magnetPoles > 0
-    ) {
-      results.widthOD =
-        results.traceCircumferenceOD / results.magnetPoles - inputs.traceGap;
+    if (results.widthOD === null && results.traceCircumferenceOD !== null && results.magnetPoles > 0) {
+      results.widthOD = results.traceCircumferenceOD / results.magnetPoles - inputs.traceGap;
       changed = true;
     }
 
-    if (
-      results.widthID === null &&
-      results.traceCircumferenceID !== null &&
-      results.magnetPoles > 0
-    ) {
-      results.widthID =
-        results.traceCircumferenceID / results.magnetPoles - inputs.traceGap;
+    if ( results.widthID === null && results.traceCircumferenceID !== null && results.magnetPoles > 0) {
+      results.widthID = results.traceCircumferenceID / results.magnetPoles - inputs.traceGap;
       changed = true;
     }
 
@@ -392,14 +341,7 @@ function performMotorCalculations(inputs) {
     }
 
     // Surface Magnetic Value Calculation
-    if (
-      results.surfaceMagneticValue === null &&
-      results.remanence !== null &&
-      results.lengthIDtoOD !== null &&
-      results.widthOD > 0 &&
-      results.widthID > 0 &&
-      results.height > 0
-    ) {
+    if (results.surfaceMagneticValue === null && results.remanence !== null && results.lengthIDtoOD !== null && results.widthOD > 0 && results.widthID > 0 && results.height > 0) {
       try {
         const avgW = (results.widthID + results.lengthIDtoOD) / 2;
         const H = results.height;
@@ -429,25 +371,17 @@ function performMotorCalculations(inputs) {
     }
 
     if (results.force === null && results.surfaceMagneticValue !== null) {
-      results.force =
-        inputs.current * results.surfaceMagneticValue * results.twoPhase;
+      results.force = inputs.current * results.surfaceMagneticValue * results.twoPhase;
       changed = true;
     }
 
-    if (
-      results.torque === null &&
-      results.avgTorqueRadius !== null &&
-      results.force !== null
-    ) {
+    if ( results.torque === null && results.avgTorqueRadius !== null && results.force !== null) {
       results.torque = (results.avgTorqueRadius / 1000) * results.force;
       changed = true;
     }
 
-    if (
-      results.avgTraceWidth === null &&
-      inputs.traceWidthID !== null &&
-      results.traceWidthOD !== null
-    ) {
+    if ( results.avgTraceWidth === null && inputs.traceWidthID !== null && results.traceWidthOD !== null) {
+
       results.avgTraceWidth =
         (((inputs.traceWidthID + results.traceWidthOD) / 2) *
           results.traceLengthRadial +
@@ -591,8 +525,8 @@ function displayMotorResults(results) {
         },
         { name: "Number of Lines", value: results.numLines, unit: "" },
         {
-          name: "Number of Lines per Phase",
-          value: results.numLinesPerPhase,
+          name: "Number of Lines per Phase", 
+          value: results.numLinesPerPhase, 
           unit: "",
         },
         {
@@ -605,11 +539,7 @@ function displayMotorResults(results) {
           value: results.traceLengthRadial,
           unit: "mm",
         },
-        {
-          name: "Curved Line Width",
-          value: results.curvedLineWidth,
-          unit: "mm",
-        },
+        { name: "Curved Line Width", value: results.curvedLineWidth, unit: "mm", },
         {
           name: "Current Conducting Radial Length",
           value: results.currentConductingRadial,
@@ -718,7 +648,7 @@ function displayMotorResults(results) {
 
       if (item.value !== null && !isNaN(item.value) && isFinite(item.value)) {
         if (item.unit === "%" || item.unit === "kW") {
-          value.textContent = `${item.value.toFixed(2)} ${item.unit}`;
+          value.textContent = `${item.value.toFixed(4)} ${item.unit}`;
         } else {
           value.textContent = `${item.value.toFixed(4)} ${item.unit}`;
         }
