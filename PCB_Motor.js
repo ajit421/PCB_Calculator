@@ -485,21 +485,21 @@ function displayMotorResults(results) {
           value: results.statorIDCircumference,
           unit: "mm",
         },
-        {
-          name: "Trace Circumference at ID",
-          value: results.traceCircumferenceID,
-          unit: "mm",
-        },
+        // {
+        //   name: "Trace Circumference at ID",
+        //   value: results.traceCircumferenceID,
+        //   unit: "mm",
+        // },
         { name: "Trace Radius ID", value: results.traceRadiusID, unit: "mm" },
         { name: "Radial Gap ID", value: results.radialGapID, unit: "mm" },
         { name: "Radial Gap OD", value: results.radialGapOD, unit: "mm" },
         { name: "Trace Radius OD", value: results.traceRadiusOD, unit: "mm" },
-        {
-          name: "Trace Circumference at OD",
-          value: results.traceCircumferenceOD,
-          unit: "mm",
-        },
-        { name: "Trace Width OD", value: results.traceWidthOD, unit: "mm" },
+        // {
+        //   name: "Trace Circumference at OD",
+        //   value: results.traceCircumferenceOD,
+        //   unit: "mm",
+        // },
+        // { name: "Trace Width OD", value: results.traceWidthOD, unit: "mm" },
         {
           name: "Average Trace Width",
           value: results.avgTraceWidth,
@@ -515,30 +515,30 @@ function displayMotorResults(results) {
           value: results.numStatorCoil,
           unit: "",
         },
-        { name: "Magnet Poles", value: results.magnetPoles, unit: "" },
-        { name: "Number of Phase", value: results.numPhase, unit: "" },
-        { name: "Per Phase Coil", value: results.perPhaseCoil, unit: "" },
-        {
-          name: "Coil per Phase 180 Apart",
-          value: results.coilPerPhase180,
-          unit: "",
-        },
+        // { name: "Magnet Poles", value: results.magnetPoles, unit: "" },
+        // { name: "Number of Phase", value: results.numPhase, unit: "" },
+        // { name: "Per Phase Coil", value: results.perPhaseCoil, unit: "" },
+        // {
+        //   name: "Coil per Phase 180 Apart",
+        //   value: results.coilPerPhase180,
+        //   unit: "",
+        // },
         { name: "Number of Lines", value: results.numLines, unit: "" },
         {
           name: "Number of Lines per Phase", 
           value: results.numLinesPerPhase, 
           unit: "",
         },
-        {
-          name: "Number of Lines per Phase 180 Apart",
-          value: results.numLinesPerPhase180,
-          unit: "",
-        },
-        {
-          name: "Trace Length Radial Line",
-          value: results.traceLengthRadial,
-          unit: "mm",
-        },
+        // {
+        //   name: "Number of Lines per Phase 180 Apart",
+        //   value: results.numLinesPerPhase180,
+        //   unit: "",
+        // },
+        // {
+        //   name: "Trace Length Radial Line",
+        //   value: results.traceLengthRadial,
+        //   unit: "mm",
+        // },
         { name: "Curved Line Width", value: results.curvedLineWidth, unit: "mm", },
         {
           name: "Current Conducting Radial Length",
@@ -550,33 +550,33 @@ function displayMotorResults(results) {
     {
       title: "Electrical Parameters",
       items: [
-        {
-          name: "Total Conductor Length all 3 phases",
-          value: results.conductorLengthAll3Phase,
-          unit: "m",
-        },
-        {
-          name: "On Conductor Length (2 phases)",
-          value: results.conductorLength2Phase,
-          unit: "m",
-        },
-        {
-          name: "2 Phase Switch On with series layers",
-          value: results.twoPhase,
-          unit: "m",
-        },
-        {
-          name: "All 3 Phase with series layers",
-          value: results.all3Phase,
-          unit: "m",
-        },
-        {
-          name: "Required Copper Thickness",
-          value: results.reqCopperThickness,
-          unit: "oz/ft²",
-        },
-        { name: "Non Magnet Area", value: results.nonMagnetArea, unit: "mm" },
-        { name: "Radius OD", value: results.radiusOD, unit: "mm" },
+        // {
+        //   name: "Total Conductor Length all 3 phases",
+        //   value: results.conductorLengthAll3Phase,
+        //   unit: "m",
+        // },
+        // {
+        //   name: "On Conductor Length (2 phases)",
+        //   value: results.conductorLength2Phase,
+        //   unit: "m",
+        // },
+        // {
+        //   name: "2 Phase Switch On with series layers",
+        //   value: results.twoPhase,
+        //   unit: "m",
+        // },
+        // {
+        //   name: "All 3 Phase with series layers",
+        //   value: results.all3Phase,
+        //   unit: "m",
+        // },
+        // {
+        //   name: "Required Copper Thickness",
+        //   value: results.reqCopperThickness,
+        //   unit: "oz/ft²",
+        // },
+        // { name: "Non Magnet Area", value: results.nonMagnetArea, unit: "mm" },
+        // { name: "Radius OD", value: results.radiusOD, unit: "mm" },
         {
           name: "Average Torque Radius",
           value: results.avgTorqueRadius,
@@ -590,11 +590,11 @@ function displayMotorResults(results) {
         { name: "Height (H)", value: results.height, unit: "mm" },
         { name: "Width (W) OD", value: results.widthOD, unit: "mm" },
         { name: "Width (w) ID", value: results.widthID, unit: "mm" },
-        {
-          name: "Length (L) from ID to OD",
-          value: results.lengthIDtoOD,
-          unit: "mm",
-        },
+        // {
+        //   name: "Length (L) from ID to OD",
+        //   value: results.lengthIDtoOD,
+        //   unit: "mm",
+        // },
         {
           name: "Parallel Stacking Constant",
           value: results.motorParallelConstant,
@@ -618,9 +618,9 @@ function displayMotorResults(results) {
       title: "Losses and Efficiency",
       items: [
         { name: "Copper Loss (P = I²R)", value: results.copperLoss, unit: "W" },
-        { name: "Core Loss", value: results.coreLoss, unit: "W" },
-        { name: "Mechanical Loss", value: results.mechanicalLoss, unit: "W" },
-        { name: "Stray Loss", value: results.strayLoss, unit: "W" },
+        // { name: "Core Loss", value: results.coreLoss, unit: "W" },
+        // { name: "Mechanical Loss", value: results.mechanicalLoss, unit: "W" },
+        // { name: "Stray Loss", value: results.strayLoss, unit: "W" },
         { name: "Total Loss", value: results.totalLoss, unit: "W" },
       ],
     },
